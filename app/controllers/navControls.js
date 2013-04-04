@@ -3,6 +3,7 @@ var mainWindow = navigation.getMainWindow();
 var menu = null;
 
 $.backButton = false;
+$.viewMode = ''
 
 exports.init = function() {
 	menu = navigation.getMenuDriver();
@@ -19,8 +20,9 @@ exports.setTitle = function(title) {
 	$.title.text = title;
 };
 
-exports.adjustOnTransition = function(options) {
+exports.onTransition = function(options) {
 	exports.setTitle(options.title);
+	$.viewMode = options.viewMode;
 		
 	if (options.viewMode == 'nav') {
 		exports.show();
@@ -45,6 +47,19 @@ exports.adjustOnTransition = function(options) {
 	else {
 		exports.hide();
 	}
+};
+
+exports.onOrientationChange = function() {
+	if (exports.getViewMode() == 'nav') {
+		exports.show();
+	}
+	else {
+		exports.hide();
+	}
+};
+
+exports.getViewMode = function() {
+	return $.viewMode;
 };
 
 exports.show = function() {

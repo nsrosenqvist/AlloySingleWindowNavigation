@@ -73,6 +73,14 @@ exports.init = function(args) {
 			Alloy.Globals.display.width = exports.mainWindow.size.width;
 			Alloy.Globals.display.height = exports.mainWindow.size.height;
 			exports.setAppDimensions();
+			
+			if (exports.nav) {
+				exports.nav.onOrientationChange(e);
+			}
+			
+			if (exports.menu) {
+				exports.menu.onOrientationChange(e);
+			}
 	
 			exports.mainWindow.removeEventListener("postlayout", listener);
 			delete listener;
@@ -424,6 +432,7 @@ exports.hasTransition = function(name) {
 
 // Transition presets
 $.transitions.crossFade = function(view, options) {
+	exports.fireEvent("transitionstart");
 	var transitionImage = Ti.UI.createImageView({
 		image: $.transitionImage,
 		height: $.appWrap.height,
@@ -440,17 +449,22 @@ $.transitions.crossFade = function(view, options) {
 	
 	// Adjust the navControls if a driver exists
 	if (exports.nav) {
-		exports.nav.adjustOnTransition(options);
+		exports.nav.onTransition(options);
+	}
+	if (exports.menu) {
+		exports.menu.onTransition(options);
 	}
 	
 	// Fade to new view
 	transitionImage.animate({opacity: 0, duration: options.duration}, function() {
 		exports.mainWindow.remove(transitionImage);
 		delete transitionImage;
+		exports.fireEvent("transitionend");
 	});
 };
 
 $.transitions.fade = function(view, options) {
+	exports.fireEvent("transitionstart");
 	var transitionColor = (options.transitionColor) ? options.transitionColor : "#000";
 	
 	var transitionImage = Ti.UI.createImageView({
@@ -479,7 +493,10 @@ $.transitions.fade = function(view, options) {
 	
 	// Adjust the navControls if a driver exists
 	if (exports.nav) {
-		exports.nav.adjustOnTransition(options);
+		exports.nav.onTransition(options);
+	}
+	if (exports.menu) {
+		exports.menu.onTransition(options);
 	}
 	
 	// Fade to new view
@@ -490,11 +507,13 @@ $.transitions.fade = function(view, options) {
 		transitionView.animate({opacity: 0, duration: options.duration}, function() {
 			exports.mainWindow.remove(transitionView);
 			delete transitionView;
+			exports.fireEvent("transitionend");
 		});
 	});
 };
 
 $.transitions.slideInFromRight = function(view, options) {
+	exports.fireEvent("transitionstart");
 	var transitionImage = Ti.UI.createImageView({
 		image: $.transitionImage,
 		height: $.appWrap.height,
@@ -512,7 +531,10 @@ $.transitions.slideInFromRight = function(view, options) {
 	
 	// Adjust the navControls if a driver exists
 	if (exports.nav) {
-		exports.nav.adjustOnTransition(options);
+		exports.nav.onTransition(options);
+	}
+	if (exports.menu) {
+		exports.menu.onTransition(options);
 	}
 	
 	// Slide in view
@@ -523,10 +545,12 @@ $.transitions.slideInFromRight = function(view, options) {
 	}, function() {
 		exports.mainWindow.remove(transitionImage);
 		delete transitionImage;
+		exports.fireEvent("transitionend");
 	});
 };
 
 $.transitions.slideInFromLeft = function(view, options) {
+	exports.fireEvent("transitionstart");
 	var transitionImage = Ti.UI.createImageView({
 		image: $.transitionImage,
 		height: $.appWrap.height,
@@ -544,7 +568,10 @@ $.transitions.slideInFromLeft = function(view, options) {
 	
 	// Adjust the navControls if a driver exists
 	if (exports.nav) {
-		exports.nav.adjustOnTransition(options);
+		exports.nav.onTransition(options);
+	}
+	if (exports.menu) {
+		exports.menu.onTransition(options);
 	}
 	
 	// Slide in view
@@ -555,10 +582,12 @@ $.transitions.slideInFromLeft = function(view, options) {
 	}, function() {
 		exports.mainWindow.remove(transitionImage);
 		delete transitionImage;
+		exports.fireEvent("transitionend");
 	});
 };
 
 $.transitions.basic = function(view, options) {
+	exports.fireEvent("transitionstart");
 	// Set old view above new one so that we can switch out it's contents without flickering
 	var transitionImage = Ti.UI.createImageView({
 		image: $.transitionImage,
@@ -576,22 +605,32 @@ $.transitions.basic = function(view, options) {
 	
 	// Adjust the navControls if a driver exists
 	if (exports.nav) {
-		exports.nav.adjustOnTransition(options);
+		exports.nav.onTransition(options);
+	}
+	if (exports.menu) {
+		exports.menu.onTransition(options);
 	}
 	
 	// Show new view
 	exports.mainWindow.remove(transitionImage);
 	delete transitionImage;
+	exports.fireEvent("transitionend");
 };
 
 $.transitions.none = function(view, options) {
+	exports.fireEvent("transitionstart");
 	exports.clearContent();
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
 	if (exports.nav) {
-		exports.nav.adjustOnTransition(options);
+		exports.nav.onTransition(options);
 	}
+	if (exports.menu) {
+		exports.menu.onTransition(options);
+	}
+	
+	exports.fireEvent("transitionend");
 };
 
 exports.clearContent = function() {

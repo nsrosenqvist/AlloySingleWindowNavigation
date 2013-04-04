@@ -130,6 +130,14 @@ exports.close = function() {
 		Ti.API.info("Attempted to close the menu when it was already closed");
 	}
 };
+
+exports.onOrientationChange = function() {
+	
+};
+
+exports.onTransition = function() {
+	
+};
 	
 exports.addEventListener = function(eventName, action) {
 	$.menuWrap.addEventListener(eventName, action);
