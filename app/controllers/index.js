@@ -7,11 +7,14 @@ var conf = {};
 conf = {
 	index: "welcome",
 	defaultViewMode: 'nav',
+	defaultOpenTransition: {transition: 'none', duration: 100},
+	defaultBackTransition: {transition: 'none', duration: 100},
 	indexOptions: {
 		topLevel: true,
 		viewMode: 'nav',
 		transition: 'none',
 		title: 'Welcome',
+		identifier: 'index',
 	},
 	menu: 'menu',
 	nav: 'navControls',

@@ -8,11 +8,15 @@ exports.init = function() {
 	menu = navigation.getMenuDriver();
 	navigation.appWrap.add($.navWrap);
 	
-	$.button.addEventListener("click", menu.toggle);
+	$.buttonMenu.addEventListener("click", menu.toggle);
+	$.buttonBack.addEventListener("click", navigation.back);
+	$.buttonBack.addEventListener("touchstart", function() {$.buttonBackWrap.backgroundColor = "#1b2026"});
+	$.buttonBack.addEventListener("touchend", function() {$.buttonBackWrap.backgroundColor = "#2e3641"});
+	$.buttonBack.addEventListener("touchcancel", function() {$.buttonBackWrap.backgroundColor = "#2e3641"});
 };
 
 exports.setTitle = function(title) {
-	$.pageTitle.text = title;
+	$.title.text = title;
 };
 
 exports.adjustOnTransition = function(options) {
@@ -21,22 +25,22 @@ exports.adjustOnTransition = function(options) {
 	if (options.viewMode == 'nav') {
 		exports.show();
 
-		if (OS_IOS) {
-			if (navigation.hasHistory() && ! $.backButton) {
-				$.backButton = true;
-				$.buttonTitle.text = "Back";
-				$.button.removeEventListener("click", menu.toggle);
-				$.button.addEventListener("click", navigation.back);
-			}
-			else {
-				if ($.backButton) {
-					$.backButton = false;
-					$.buttonTitle.text = "Menu";
-					$.button.addEventListener("click", menu.toggle);
-					$.button.removeEventListener("click", navigation.back);
-				}
+		if ( ! options.topLevel && ! $.backButton) {
+			$.buttonMenu.visible = false;
+			$.buttonBackWrap.visible = true;
+			$.buttonWrap.width = $.buttonBackWrap.width;
+			$.backButton = true;
+		}
+		else {
+			if ($.backButton) {
+				$.buttonMenu.visible = true;
+				$.buttonBackWrap.visible = false;
+				$.buttonWrap.width = $.buttonMenu.width + $.buttonMenu.left + $.buttonMenu.right;
+				$.backButton = false;
 			}
 		}
+		
+		$.title.left = $.buttonWrap.width + 15;
 	}
 	else {
 		exports.hide();

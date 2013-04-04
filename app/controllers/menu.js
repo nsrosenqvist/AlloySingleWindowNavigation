@@ -3,6 +3,7 @@ var mainWindow = navigation.getMainWindow();
 var navCtrl = null;
 
 $.menuOpen = false;
+
 $.sliding = {
 	offset: 0,
 	center: 0,
@@ -57,9 +58,9 @@ exports.init = function() {
 	navCtrl = navigation.getNavControlsDriver();
 	
 	// Calculate margin needed for button
-	var buttonWidth = navCtrl.button.width;
-	buttonWidth += (navCtrl.button.left) ? navCtrl.button.left : 0;
-	buttonWidth += (navCtrl.button.right) ? navCtrl.button.right : 0;
+	var buttonWidth = navCtrl.buttonMenu.width;
+	buttonWidth += (navCtrl.buttonMenu.left) ? navCtrl.buttonMenu.left : 0;
+	buttonWidth += (navCtrl.buttonMenu.right) ? navCtrl.buttonMenu.right : 0;
 	
 	// Calculate menu width
 	var newMenuWidth = Alloy.Globals.display.width - buttonWidth;
@@ -67,12 +68,10 @@ exports.init = function() {
 	
 	mainWindow.add($.menuWrap);
 	
+	// TODO: Enable this when Titanium is less buggy when it comes to animations and events
 	// Make the menu open when sliding the content view
-	exports.bindOpenOnSlide();
+	//exports.bindOpenOnSlide();
 };
-
-// Init function which should executed when the navigation controls driver is initialized
-exports.postInit = function() {};
 
 exports.bindOpenOnSlide = function() {
 	navigation.appWrap.addEventListener("touchstart", $.sliding.touchstart);
@@ -107,7 +106,7 @@ exports.open = function() {
 		exports.fireEvent("openstart");
 
 		// Show menu
-		navigation.appWrap.animate({left: $.menuWrap.width, duration: 100}, function() {
+		navigation.appWrap.animate({left: $.menuWrap.width, duration: 150, curve: Ti.UI.ANIMATION_CURVE_EASE_OUT}, function() {
 			exports.fireEvent("opencompleted");
 		});
 	}
@@ -122,7 +121,7 @@ exports.close = function() {
 		exports.fireEvent("closestart");
 		
 		// hide menu
-		navigation.appWrap.animate({left: 0, duration: 100}, function() {
+		navigation.appWrap.animate({left: 0, duration: 150, curve: Ti.UI.ANIMATION_CURVE_EASE_OUT}, function() {
 			$.menuOpen = false;
 			exports.fireEvent("closecompleted");
 		});
@@ -159,13 +158,23 @@ exports.addEventListener("closestart", function(){
 });
 
 // Buttons
-$.buttonIndex.addEventListener("click", function() {
-	navigation.open(navigation.get('index'), navigation.get('indexOptions'));
+$.buttonIndex.addEventListener("click", function(e) {
+	if (navigation.getCurrentViewIdentifier() != 'index') {
+		navigation.open(navigation.get('index'), navigation.get('indexOptions'));
+	}
+	else {
+		exports.close();
+	}
 });
-$.buttonTopLevel.addEventListener("click", function() {
-	navigation.open("subview", {title: 'Subview', topLevel: true});
+$.buttonTopLevel.addEventListener("click", function(e) {
+	if (navigation.getCurrentViewIdentifier() != 'topview') {
+		navigation.open("topview", {title: 'Topview', topLevel: true, identifier: 'topview'});
+	}
+	else {
+		exports.close();
+	}
 });
-$.buttonExit.addEventListener("click", function() {
+$.buttonExit.addEventListener("click", function(e) {
 	navigation.exit();
 });
 

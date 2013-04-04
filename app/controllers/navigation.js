@@ -228,6 +228,12 @@ exports.open = function(controller, options /* Also toplevel (boolean) */, recor
 	if ( ! options.hasOwnProperty("title")) {
 		options.title = "";
 	}
+	if ( ! options.hasOwnProperty("identifier")) {
+		options.identifier = "";
+	}
+	if ( ! options.hasOwnProperty("topLevel")) {
+		options.topLevel = false;
+	}
 	if ( ! options.hasOwnProperty("viewMode")) {
 		options.viewMode = $.prop.defaultViewMode;
 	}
@@ -552,7 +558,7 @@ $.transitions.slideInFromLeft = function(view, options) {
 	});
 };
 
-$.transitions.none = function(view, options) {
+$.transitions.basic = function(view, options) {
 	// Set old view above new one so that we can switch out it's contents without flickering
 	var transitionImage = Ti.UI.createImageView({
 		image: $.transitionImage,
@@ -576,6 +582,16 @@ $.transitions.none = function(view, options) {
 	// Show new view
 	exports.mainWindow.remove(transitionImage);
 	delete transitionImage;
+};
+
+$.transitions.none = function(view, options) {
+	exports.clearContent();
+	$.content.add(view);
+	
+	// Adjust the navControls if a driver exists
+	if (exports.nav) {
+		exports.nav.adjustOnTransition(options);
+	}
 };
 
 exports.clearContent = function() {
@@ -622,6 +638,28 @@ exports.unBindBack = function() {
 
 exports.exit = function() {
 	exports.mainWindow.close();
+};
+
+exports.getCurrentViewIdentifier = function() {
+	var length = $.prop.historyStackOptions.length;
+	
+	if (length > 0) {
+		return $.prop.historyStackOptions[length - 1].identifier;
+	}
+	else {
+		return undefined;
+	}
+};
+
+exports.isCurrentViewTopLevel = function() {
+	var length = $.prop.historyStackOptions.length;
+	
+	if (length > 0) {
+		return $.prop.historyStackOptions[length - 1].topLevel;
+	}
+	else {
+		return undefined;
+	}
 };
 
 exports.addEventListener = function(eventName, action) {

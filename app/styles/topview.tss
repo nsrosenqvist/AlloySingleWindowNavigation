@@ -1,12 +1,12 @@
 ".container": {
-	backgroundColor: "white",
+	backgroundColor: "#f9f2be",
+	width: "100%",
 	height: "100%",
-	width: "100%"
 },
 "#button": {
 	width: 150,
 	height: 40,
-	backgroundColor: "#95a0a8",
+	backgroundColor: "#a8bd44",
 	color: "#fff",
 	font: {
 		fontSize: 16,
@@ -14,8 +14,8 @@
 	},
 },
 "#button[platform=android]": {
-	backgroundSelectedColor: "#7f888f",
+	backgroundSelectedColor: "#91a33b",
 },
 "#button[platform=ios]": {
-	selectedColor: "#7f888f",
+	selectedColor: "#91a33b",
 },

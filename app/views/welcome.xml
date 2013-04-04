@@ -1,12 +1,5 @@
 <Alloy>
 	<View class="container">
-		<Button id="buttonFade" title="Fade transition"></Button>
-		<Button id="buttonCrossFade" title="CrossFade transition"></Button>
-		<Button id="buttonSlideRight" title="SlideInFromRight transition"></Button>
-		<Button id="buttonSlideLeft" title="SlideInFromLeft transition"></Button>
-		<Button id="buttonNone" title="No transition"></Button>
-		<Button id="buttonDefault" title="Default transition"></Button>
-		<Button id="buttonCustom" title="Custom transition"></Button>
-		<Button id="buttonFullscreen" title="Fullscreen view"></Button>
+		<Button id="button" title="Open subview"></Button>
 	</View>
 </Alloy>
