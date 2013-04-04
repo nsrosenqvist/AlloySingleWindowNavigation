@@ -1,0 +1,12 @@
+".container": {
+	backgroundColor: "gray",
+	height: "100%",
+	width: "100%",
+}
+"#other": {
+	backgroundColor: "pink",
+	height: "100%",
+	width: "100%",
+	visible: false,
+	zIndex: 1,
+}

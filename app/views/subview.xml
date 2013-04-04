@@ -1,0 +1,9 @@
+<Alloy>
+	<View class="container" id="main">
+		<Label>Subview</Label>
+		<Button id="button" title="Navigation within the same controller"></Button>
+	</View>
+	<View id="other">
+		<Label>Same controller</Label>
+	</View>
+</Alloy>

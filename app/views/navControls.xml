@@ -1,0 +1,14 @@
+<Alloy>
+	<View id="navWrap">
+		<View id="navBar">
+			<View id="button">
+				<Label id="buttonTitle">
+					Menu
+				</Label>
+			</View>
+			<Label id="pageTitle">
+				Page
+			</Label>
+		</View>
+	</View>
+</Alloy>

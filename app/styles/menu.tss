@@ -1,0 +1,18 @@
+"#menuWrap": {
+	height: "100%",
+	width: Ti.UI.SIZE,
+	top: 0,
+	left: 0,
+	zIndex: -1,
+},
+"#menu": {
+	height: "100%",
+	width: 400,
+	top: 0,
+	left: 0,
+	backgroundColor: "green",
+	layout: "vertical",
+},
+Button: {
+	top: 10,
+},
