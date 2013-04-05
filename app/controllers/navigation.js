@@ -10,6 +10,7 @@ $.prop.defaultOpenTransition = {transition: 'fade', transitionColor: "#fff", dur
 $.prop.defaultBackTransition = {transition: 'fade', transitionColor: "#000", duration: 200};
 $.prop.defaultViewMode = 'fullscreen';
 $.prop.confirmOnExit = true;
+$.prop.defaultCloseMenu = true;
 
 // Private properties
 $.transitionImage = null;
@@ -77,7 +78,6 @@ exports.init = function(args) {
 			if (exports.nav) {
 				exports.nav.onOrientationChange(e);
 			}
-			
 			if (exports.menu) {
 				exports.menu.onOrientationChange(e);
 			}
@@ -95,19 +95,17 @@ exports.init = function(args) {
 	// Fire orientationchange event so that the display object get's updated on postlayout
 	Ti.Gesture.fireEvent("orientationchange", {quiet: true});
 	
-	// Create navigation controls
+	// Create the driver if they are set
 	if (args.hasOwnProperty("nav")) {
 		exports.setNavControlsDriver(args.nav);
 		delete args.nav;
 	}
-	
-	// Create the menu
 	if (args.hasOwnProperty("menu")) {
 		exports.setMenuDriver(args.menu);
 		delete args.menu;
 	}
 	
-	// Initialize the components
+	// Initialize the drivers
 	if (exports.nav) {
 		exports.nav.init();
 	}
@@ -115,7 +113,7 @@ exports.init = function(args) {
 		exports.menu.init();
 	}
 	
-	// General properties
+	// Set general properties
 	for (var option in args) {
 		set(option, args[option]);
 	}
@@ -206,11 +204,14 @@ exports.getMainWindow = function() {
 	return exports.mainWindow;
 };
 
+// Method for updating the app's dimensions because
+// it's easier to work with set values than percentages
 exports.setAppDimensions = function() {
 	$.appWrap.width = Alloy.Globals.display.width;
 	$.appWrap.height = Alloy.Globals.display.height;
 };
 
+// Open a controller's view
 exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	if ( ! controller) {
 		Ti.API.error("Open of view failed, no controller specified");
@@ -249,7 +250,7 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 		options.affectHistory = true;
 	}
 	if ( ! options.hasOwnProperty("closeMenu")) {
-		options.closeMenu = true;
+		options.closeMenu = $.prop.defaultCloseMenu;
 	}
 	
 	// Create controller and the view we're going to show
@@ -339,6 +340,8 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	return true;
 };
 
+// Navigate back in history with functionality for specifying
+// the number of steps to go back in history
 exports.back = function(steps, newOptions) {
 	if (typeof steps != "number") {
 		steps = 1;
@@ -418,7 +421,6 @@ exports.back = function(steps, newOptions) {
 exports.addTransition = function(name, action) {
 	$.transitions[name] = action;
 };
-
 exports.hasTransition = function(name) {
 	if ( ! name) {
 		return false;
@@ -635,12 +637,15 @@ $.transitions.none = function(view, options) {
 	exports.fireEvent("transitionend");
 };
 
+// Clear the current view's content
 exports.clearContent = function() {
 	for (var child in $.content.children) {
 		$.content.remove($.content.children[child]);
 	}
 };
 
+// Clear the historyStack. HistoryLimit specifies how many
+// steps of the most recent history to keep
 exports.clearHistory = function(historyLimit) {
 	historyLimit = (historyLimit) ? historyLimit : 0;
 	
@@ -654,7 +659,6 @@ exports.clearHistory = function(historyLimit) {
 		}
 	}
 };
-
 exports.hasHistory = function() {
 	return ($.prop.historyStack.length > 1) ? true : false;
 };
@@ -677,10 +681,13 @@ exports.unBindBack = function() {
 	exports.mainWindow.removeEventListener("androidback", exports.back);
 };
 
+// A convenience method for closing the application
 exports.exit = function() {
 	exports.mainWindow.close();
 };
 
+// A convenience method for retrieving a pointer to the previous controller.
+// The whole history stack can be retrieved and manipulated through exports.get('historyStack')
 exports.getPreviousController = function() {
 	var length = $.prop.historyStack.length;
 	
@@ -691,7 +698,6 @@ exports.getPreviousController = function() {
 		return undefined;
 	}
 };
-
 exports.getPreviousControllerOptions = function() {
 	var length = $.prop.historyStackOptions.length;
 	
@@ -703,6 +709,8 @@ exports.getPreviousControllerOptions = function() {
 	}
 };
 
+// A convenience method for retrieving a pointer to the current controller.
+// The whole history stack can be retrieved and manipulated through exports.get('historyStack')
 exports.getCurrentController = function() {
 	var length = $.prop.historyStack.length;
 	
@@ -713,7 +721,6 @@ exports.getCurrentController = function() {
 		return undefined;
 	}
 };
-
 exports.getCurrentControllerOptions = function() {
 	var length = $.prop.historyStackOptions.length;
 	
@@ -728,11 +735,9 @@ exports.getCurrentControllerOptions = function() {
 exports.addEventListener = function(eventName, action) {
 	$.appWrap.addEventListener(eventName, action);
 };
-	
 exports.removeEventListener = function(eventName, action) {
 	$.appWrap.removeEventListener(eventName, action);
 };
-	
 exports.fireEvent = function(eventName) {
 	$.appWrap.fireEvent(eventName);
 };
