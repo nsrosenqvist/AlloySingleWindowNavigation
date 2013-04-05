@@ -211,7 +211,7 @@ exports.setAppDimensions = function() {
 	$.appWrap.height = Alloy.Globals.display.height;
 };
 
-exports.open = function(controller, options /* Also toplevel (boolean) */, recordHistory) {
+exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	if ( ! controller) {
 		Ti.API.error("Open of view failed, no controller specified");
 		return false;
@@ -245,8 +245,11 @@ exports.open = function(controller, options /* Also toplevel (boolean) */, recor
 	if ( ! options.hasOwnProperty("viewMode")) {
 		options.viewMode = $.prop.defaultViewMode;
 	}
-	if (typeof recordHistory != "boolean") {
-		recordHistory = true;
+	if ( ! options.hasOwnProperty("affectHistory")) {
+		options.affectHistory = true;
+	}
+	if ( ! options.hasOwnProperty("closeMenu")) {
+		options.closeMenu = true;
 	}
 	
 	// Create controller and the view we're going to show
@@ -283,7 +286,7 @@ exports.open = function(controller, options /* Also toplevel (boolean) */, recor
 	}
 	
 	// Is this opening of a controller's view supposed to affect the historyStack?
-	if (recordHistory) {
+	if (options.affectHistory) {
 		// Since iOS apps' navigation is often hierarchical we treat it's history differently
 		if (OS_IOS) {
 			// topLevel is an option that only is relevant to iOS
@@ -306,9 +309,12 @@ exports.open = function(controller, options /* Also toplevel (boolean) */, recor
 			}
 		}
 	}
+	else {
+		Ti.API.info("Opening view without affecting history");
+	}
 	
 	// Wait for the menu to close (if it's open) before opening new view 
-	if (exports.menu && exports.menu.isOpen()) {
+	if (options.closeMenu && exports.menu && exports.menu.isOpen()) {
 		Ti.API.info("Transitioning to the new view after the menu has closed...");
 		
 		// Create a callback for when the menu has closed and delete it within itself so that it doesn't repeat
@@ -340,12 +346,24 @@ exports.back = function(steps, newOptions) {
 	if ( ! newOptions) {
 		newOptions = {};
 	}
+
+	// If the menu is open we close it instead of navigating back in history
+	if (exports.menu && exports.menu.isOpen()) {
+		exports.menu.close();
+		return true;
+	}
+	
+	// Prevent trying to go further back in history than what's possible
+	if (steps > $.prop.historyStack.length -1) {
+		steps = $.prop.historyStack.length -1;
+	}
 	
 	// Close app if we've gone to the very end of history
 	if ($.prop.historyStack.length <= 1) {
 		// Confirm exit
 		if (OS_ANDROID && $.prop.confirmOnExit && ! $.confirmedExit) {
 			$.confirmedExit = true;
+			Ti.API.info("At end of historyStack, showing exit confirmation message");
 			
 			var toast = Ti.UI.createNotification({
 				message: "Press back again to exit",
@@ -360,30 +378,14 @@ exports.back = function(steps, newOptions) {
 			return true;
 		}
 		else {
+			Ti.API.info("At end of historyStack, closing application");
 			exports.exit();
 			return true;
 		}
 	} 
-	
-	// Prevent trying to go further back in history than what's possible
-	if (steps > $.prop.historyStack.length) {
-		steps = $.prop.historyStack.length;
-	}
-	
-	// If the menu is open we close it instead of navigating back in history
-	if (exports.menu && exports.menu.isOpen()) {
-		exports.menu.close();
-		return true;
-	}
-	
-	if ( ! exports.hasHistory) {
-		Ti.API.error("Attempting to go back in history when there is no history available");
-		return false;
-	}
-	else {	
-		exports.fireEvent("back");
-		Ti.API.info("Navigating back in history " + steps + " steps...");
-	}
+
+	exports.fireEvent("back");
+	Ti.API.info("Navigating back in history " + steps + " steps...");
 
 	// Controller we will show
 	var controller = null;
@@ -402,7 +404,7 @@ exports.back = function(steps, newOptions) {
 	// Merge default transition
 	options = $.merge(options, $.prop.defaultBackTransition);
 	
-	// Set iOS-topLevel property
+	// Set topLevel property
 	if ( ! options.hasOwnProperty("topLevel")) {
 		options.topLevel = ( ! exports.hasHistory()) ? true : false;
 	}
@@ -679,22 +681,44 @@ exports.exit = function() {
 	exports.mainWindow.close();
 };
 
-exports.getCurrentViewIdentifier = function() {
-	var length = $.prop.historyStackOptions.length;
+exports.getPreviousController = function() {
+	var length = $.prop.historyStack.length;
 	
-	if (length > 0) {
-		return $.prop.historyStackOptions[length - 1].identifier;
+	if (length > 1) {
+		return $.prop.historyStack[length - 2];
 	}
 	else {
 		return undefined;
 	}
 };
 
-exports.isCurrentViewTopLevel = function() {
+exports.getPreviousControllerOptions = function() {
 	var length = $.prop.historyStackOptions.length;
 	
 	if (length > 0) {
-		return $.prop.historyStackOptions[length - 1].topLevel;
+		return $.prop.historyStackOptions[length - 2];
+	}
+	else {
+		return undefined;
+	}
+};
+
+exports.getCurrentController = function() {
+	var length = $.prop.historyStack.length;
+	
+	if (length > 0) {
+		return $.prop.historyStack[length - 1];
+	}
+	else {
+		return undefined;
+	}
+};
+
+exports.getCurrentControllerOptions = function() {
+	var length = $.prop.historyStackOptions.length;
+	
+	if (length > 0) {
+		return $.prop.historyStackOptions[length - 1];
 	}
 	else {
 		return undefined;

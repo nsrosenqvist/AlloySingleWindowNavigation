@@ -138,19 +138,23 @@ exports.onOrientationChange = function() {
 exports.onTransition = function() {
 	
 };
-	
+
+// Proxy method for the main/wrapper element of this controller
 exports.addEventListener = function(eventName, action) {
 	$.menuWrap.addEventListener(eventName, action);
 };
-	
+
+// Proxy method for the main/wrapper element of this controller
 exports.removeEventListener = function(eventName, action) {
 	$.menuWrap.removeEventListener(eventName, action);
 };
-	
+
+// Proxy method for the main/wrapper element of this controller
 exports.fireEvent = function(eventName) {
 	$.menuWrap.fireEvent(eventName);
 };
 
+// Method that should return a boolean on whether the menu is open or closed
 exports.isOpen = function() {
 	return $.menuOpen;
 };
@@ -167,7 +171,7 @@ exports.addEventListener("closestart", function(){
 
 // Buttons
 $.buttonIndex.addEventListener("click", function(e) {
-	if (navigation.getCurrentViewIdentifier() != 'index') {
+	if (navigation.getCurrentControllerOptions().identifier != 'index') {
 		navigation.open(navigation.get('index'), navigation.get('indexOptions'));
 	}
 	else {
@@ -175,7 +179,7 @@ $.buttonIndex.addEventListener("click", function(e) {
 	}
 });
 $.buttonTopLevel.addEventListener("click", function(e) {
-	if (navigation.getCurrentViewIdentifier() != 'topview') {
+	if (navigation.getCurrentControllerOptions().identifier != 'topview') {
 		navigation.open("topview", {title: 'Topview', topLevel: true, identifier: 'topview'});
 	}
 	else {
