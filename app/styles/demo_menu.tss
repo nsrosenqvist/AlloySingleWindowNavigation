@@ -1,0 +1,51 @@
+"#menuWrap": {
+	height: "100%",
+	width: Ti.UI.SIZE,
+	top: 0,
+	left: 0,
+	zIndex: -1,
+},
+"#menu": {
+	height: "100%",
+	width: 400,
+	top: 0,
+	left: 0,
+	backgroundColor: "#c1cfd9",
+	layout: "vertical",
+	zIndex: 0,
+},
+"#border": {
+	width: 10,
+	height: "100%",
+	right: 0,
+	backgroundColor: "#9eb2c0",
+	zIndex: 1,
+},
+".menuItem": {
+	top: 5,
+	left: 10,
+	right: 20,
+	width: 200,
+	height: 40,
+	backgroundColor: "#95a0a8",
+	color: "#fff",
+	font: {
+		fontSize: 16,
+		fontWeight: "bold",
+	},
+},
+".menuItem[platform=android]": {
+	backgroundSelectedColor: "#7f888f",
+},
+".menuItem[platform=ios]": {
+	selectedColor: "#7f888f",
+},
+"#buttonExit": {
+	backgroundColor: "#f97e76",
+},
+"#buttonExit[platform=android]": {
+	backgroundSelectedColor: "#e0726a",
+},
+"#buttonExit[platform=ios]": {
+	selectedColor: "#e0726a",
+},

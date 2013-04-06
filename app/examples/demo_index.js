@@ -7,8 +7,8 @@ var conf = {};
 conf = {
 	index: "demo_welcome",
 	defaultViewMode: 'nav',
-	defaultOpenTransition: {transition: 'none', duration: 100},
-	defaultBackTransition: {transition: 'none', duration: 100},
+	defaultOpenTransition: {transition: 'none', duration: 150},
+	defaultBackTransition: {transition: 'none', duration: 150},
 	indexOptions: {
 		topLevel: true,
 		viewMode: 'nav',
@@ -16,8 +16,9 @@ conf = {
 		title: 'Welcome',
 		identifier: 'index',
 	},
-	menu: 'demo_menu',
-	nav: 'demo_navControls',
+	menuDriver: 'demo_menu',
+	//nav: 'demo_navControls',
+	//defaultViewDriver: 'demo_view',
 	bindMenu: true,
 	confirmOnExit: true,
 };

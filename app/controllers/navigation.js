@@ -4,11 +4,13 @@ $.prop = {};
 $.prop.historyStack = new Array();
 $.prop.historyStackOptions = new Array();
 $.prop.historyLimit = 10;
+$.prop.clearHistoryOnTopLevel = false;
 $.prop.index = null;
 $.prop.indexOptions = null;
 $.prop.defaultOpenTransition = {transition: 'fade', transitionColor: "#fff", duration: 200};
 $.prop.defaultBackTransition = {transition: 'fade', transitionColor: "#000", duration: 200};
 $.prop.defaultViewMode = 'fullscreen';
+$.prop.defaultViewDriver = '';
 $.prop.confirmOnExit = true;
 $.prop.defaultCloseMenu = true;
 
@@ -16,6 +18,9 @@ $.prop.defaultCloseMenu = true;
 $.transitionImage = null;
 $.transitions = {};
 $.confirmedExit = false;
+$.onTransition = [];
+$.mainWindow = undefined;
+$.onOrientationChange = [];
 
 // Internal helper functions
 $.pixelsToDPUnits = function(pixels) {
@@ -49,15 +54,15 @@ exports.init = function(args) {
 
 	// Set the mainWindow
 	if (args.hasOwnProperty("mainWindow")) {
-		exports.setMainWindow(args.mainWindow);
+		$.mainWindow = args.mainWindow;
 		delete args.mainWindow;
 	}
 	else {
-		exports.setMainWindow(Ti.UI.createWindow({
+		$.mainWindow = Ti.UI.createWindow({
 			backgroundColor: "#000",
 			navBarHidden: true,
 			exitOnClose: true,
-		}));
+		});
 	}
 	
 	// Create global display object containing the display dimensions
@@ -71,21 +76,25 @@ exports.init = function(args) {
 	// Update dimensions on orientation changes to get more accurate values instead of displayCaps
 	Ti.Gesture.addEventListener("orientationchange", function(e) {
 		var listener = function() {
-			Alloy.Globals.display.width = exports.mainWindow.size.width;
-			Alloy.Globals.display.height = exports.mainWindow.size.height;
+			Alloy.Globals.display.width = $.mainWindow.size.width;
+			Alloy.Globals.display.height = $.mainWindow.size.height;
 			exports.setAppDimensions();
+			//exports.executeOrientationChangeActions();
 			
-			if (exports.nav) {
-				exports.nav.onOrientationChange(e);
-			}
-			if (exports.menu) {
-				exports.menu.onOrientationChange(e);
-			}
+			// if (exports.nav) {
+				// exports.nav.onOrientationChange(e);
+			// }
+			// if (exports.view) {
+				// exports.view.onOrientationChange(e);
+			// }
+			// if (exports.menu) {
+				// exports.menu.onOrientationChange(e);
+			// }
 	
-			exports.mainWindow.removeEventListener("postlayout", listener);
+			$.mainWindow.removeEventListener("postlayout", listener);
 			delete listener;
 		};
-		exports.mainWindow.addEventListener("postlayout", listener);
+		$.mainWindow.addEventListener("postlayout", listener);
 		
 		if ( ! e.quiet) { 
 			Ti.API.info("Device switched orientation");
@@ -96,22 +105,29 @@ exports.init = function(args) {
 	Ti.Gesture.fireEvent("orientationchange", {quiet: true});
 	
 	// Create the driver if they are set
-	if (args.hasOwnProperty("nav")) {
-		exports.setNavControlsDriver(args.nav);
-		delete args.nav;
+	// if (args.hasOwnProperty("nav")) {
+		// exports.setNavControlsDriver(args.nav);
+		// delete args.nav;
+	// }
+	if (args.hasOwnProperty("menuDriver")) {
+		exports.setMenuDriver(args.menuDriver);
+		delete args.menuDriver;
 	}
-	if (args.hasOwnProperty("menu")) {
-		exports.setMenuDriver(args.menu);
-		delete args.menu;
-	}
-	
+	// if (args.hasOwnProperty("viewDriver")) {
+		// exports.setViewDriver(args.viewDriver);
+		// delete args.viewDriver;
+	// }
+// 	
 	// Initialize the drivers
-	if (exports.nav) {
-		exports.nav.init();
-	}
+	// if (exports.nav) {
+		// exports.nav.init();
+	// }
 	if (exports.menu) {
 		exports.menu.init();
 	}
+	// if (exports.view) {
+		// exports.view.init();
+	// }
 	
 	// Set general properties
 	for (var option in args) {
@@ -127,13 +143,46 @@ exports.init = function(args) {
 	}
 	
 	// Add the navigation controller content to the mainWindow
-	exports.mainWindow.add($.getView());
-	exports.mainWindow.open();
+	$.mainWindow.add($.getView());
+	$.mainWindow.open();
 
 	// Open the index/default/welcome view
 	exports.open($.prop.index, $.prop.indexOptions);
 	Ti.API.info("Application initialization complete");
 };
+
+// exports.addOrientationChangeAction = function(action) {
+	// if ( ! action) {
+		// $.onOrientationChange.push(action);
+		// return true;
+	// }
+	// else {
+		// return false;
+	// }
+// };
+// exports.executeOrientationChangeActions = function() {
+	// if ($.onOrientationChange.length > 0) {
+		// for (var action in $.onOrientationChange) {
+			// action();
+		// }
+	// }
+// };
+// exports.addTransitionAction = function(action) {
+	// if ( ! action) {
+		// $.onTransition.push(action);
+		// return true;
+	// }
+	// else {
+		// return false;
+	// }
+// };
+// exports.executeTransitionActions = function() {
+	// if ($.onTransition.length > 0) {
+		// for (var action in $.onTransition) {
+			// action();
+		// }
+	// }
+// };
 
 // General getter/setter
 var get = exports.get = function(property) {
@@ -172,36 +221,54 @@ exports.getMenuDriver = function() {
 };
 
 // Place holder for the navigation controls driver
-exports.nav = null;
+// exports.nav = null;
+// 
+// exports.setNavControlsDriver = function(controller) {
+	// if (typeof controller == "string") {
+		// try {
+			// exports.nav = Alloy.createController(controller);
+		// }
+		// catch (error) {
+			// Ti.API.error("Error occurred when creating navigation controls driver: " + error);
+			// return false;
+		// }
+	// }
+	// else {
+		// if (controller) {
+			// exports.nav = controller;
+		// }
+	// }
+// };
+// exports.getNavControlsDriver = function() {
+	// return exports.nav;
+// };
 
-exports.setNavControlsDriver = function(controller) {
-	if (typeof controller == "string") {
-		try {
-			exports.nav = Alloy.createController(controller);
-		}
-		catch (error) {
-			Ti.API.error("Error occurred when creating navigation controls driver: " + error);
-			return false;
-		}
-	}
-	else {
-		if (controller) {
-			exports.nav = controller;
-		}
-	}
-};
-exports.getNavControlsDriver = function() {
-	return exports.nav;
-};
+// Place holder for the navigation controls driver
+// exports.view = null;
+// 
+// exports.setViewDriver = function(controller) {
+	// if (typeof controller == "string") {
+		// try {
+			// exports.view = Alloy.createController(controller);
+		// }
+		// catch (error) {
+			// Ti.API.error("Error occurred when creating navigation controls driver: " + error);
+			// return false;
+		// }
+	// }
+	// else {
+		// if (controller) {
+			// exports.view = controller;
+		// }
+	// }
+// };
+// exports.getViewDriver = function() {
+	// return exports.view;
+// };
 
-// Place holder for the main window
-exports.mainWindow = null;
-
-exports.setMainWindow = function(win) {
-	exports.mainWindow = win;
-};
+// Get a pointer to the mainWindow
 exports.getMainWindow = function() {
-	return exports.mainWindow;
+	return $.mainWindow;
 };
 
 // Method for updating the app's dimensions because
@@ -234,18 +301,21 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	// Merge transition defaults
 	options = $.mergeMissing(options, $.prop.defaultOpenTransition);
 	
-	if ( ! options.hasOwnProperty("title")) {
-		options.title = "";
-	}
+	// if ( ! options.hasOwnProperty("title")) {
+		// options.title = "";
+	// }
 	if ( ! options.hasOwnProperty("identifier")) {
 		options.identifier = "";
 	}
 	if ( ! options.hasOwnProperty("topLevel")) {
 		options.topLevel = false;
 	}
-	if ( ! options.hasOwnProperty("viewMode")) {
-		options.viewMode = $.prop.defaultViewMode;
-	}
+	// if ( ! options.hasOwnProperty("viewMode")) {
+		// options.viewMode = $.prop.defaultViewMode;
+	// }
+	// if ( ! options.hasOwnProperty("viewDriver")) {
+		// options.viewDriver = $.prop.defaultViewDriver;
+	// }
 	if ( ! options.hasOwnProperty("affectHistory")) {
 		options.affectHistory = true;
 	}
@@ -255,8 +325,8 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	
 	// Create controller and the view we're going to show
 	if (typeof controller == "string") {
-		Ti.API.info("Opening controller view: " + controller + ", Options: " + JSON.stringify(options));
-		controller = Alloy.createController(controller);
+		Ti.API.info("Opening controller: " + controller + ", Options: " + JSON.stringify(options));
+		controller = Alloy.createController(controller, options);
 	}
 	else {
 		Ti.API.info("Opening unknown controller view. Options: " + JSON.stringify(options));
@@ -264,6 +334,13 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 
 	// If a view hasn't been provided we show the controllers associated view 
 	if ( ! options.hasOwnProperty("view")) {
+		// Init if the controller has a Init method
+		Ti.API.info("Preparing the view related to the specified controller...");
+		if (controller.hasOwnProperty("init")) {
+			Ti.API.info("Executing the controller's init method...");
+			controller.init();
+		}
+		
 		options.view = controller.getView();
 	}
 	else {
@@ -288,27 +365,18 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	
 	// Is this opening of a controller's view supposed to affect the historyStack?
 	if (options.affectHistory) {
-		// Since iOS apps' navigation is often hierarchical we treat it's history differently
-		if (OS_IOS) {
-			// topLevel is an option that only is relevant to iOS
-			if (options.topLevel) {
-				Ti.API.info("Top level view opened, clearing all controller history");
-				exports.clearHistory();
-				Ti.API.info($.prop.historyStack.length);
-			}
-
-			$.prop.historyStackOptions.push(options);
-			$.prop.historyStack.push(controller);
+		if ($.prop.clearHistoryOnTopLevel) {
+			Ti.API.info("Top level view opened, clearing all controller history");
+			exports.clearHistory();
 		}
 		else {
-			$.prop.historyStackOptions.push(options);
-			$.prop.historyStack.push(controller);
-		
-			// Clear history but keep the specified number of controllers in history
 			if ($.prop.historyLimit !== null) {
 				exports.clearHistory($.prop.historyLimit);
 			}
 		}
+		
+		$.prop.historyStackOptions.push(options);
+		$.prop.historyStack.push(controller);
 	}
 	else {
 		Ti.API.info("Opening view without affecting history");
@@ -447,21 +515,21 @@ $.transitions.crossFade = function(view, options) {
 	});
 	
 	// Add new view
-	exports.mainWindow.add(transitionImage);
+	$.mainWindow.add(transitionImage);
 	exports.clearContent();
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
-	if (exports.nav) {
-		exports.nav.onTransition(options);
-	}
+	// if (exports.nav) {
+		// exports.nav.onTransition(options);
+	// }
 	if (exports.menu) {
 		exports.menu.onTransition(options);
 	}
 	
 	// Fade to new view
 	transitionImage.animate({opacity: 0, duration: options.duration}, function() {
-		exports.mainWindow.remove(transitionImage);
+		$.mainWindow.remove(transitionImage);
 		delete transitionImage;
 		exports.fireEvent("transitionend");
 	});
@@ -490,26 +558,26 @@ $.transitions.fade = function(view, options) {
 	});
 
 	// Add new view
-	exports.mainWindow.add(transitionImage);
-	exports.mainWindow.add(transitionView);
+	$.mainWindow.add(transitionImage);
+	$.mainWindow.add(transitionView);
 	exports.clearContent();
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
-	if (exports.nav) {
-		exports.nav.onTransition(options);
-	}
+	// if (exports.nav) {
+		// exports.nav.onTransition(options);
+	// }
 	if (exports.menu) {
 		exports.menu.onTransition(options);
 	}
 	
 	// Fade to new view
 	transitionImage.animate({opacity: 0, duration: options.duration}, function() {
-		exports.mainWindow.remove(transitionImage);
+		$.mainWindow.remove(transitionImage);
 		delete transitionImage;
 		
 		transitionView.animate({opacity: 0, duration: options.duration}, function() {
-			exports.mainWindow.remove(transitionView);
+			$.mainWindow.remove(transitionView);
 			delete transitionView;
 			exports.fireEvent("transitionend");
 		});
@@ -528,15 +596,15 @@ $.transitions.slideInFromRight = function(view, options) {
 	});
 
 	// Set the view out of sight before switching it's contents
-	exports.mainWindow.add(transitionImage);
+	$.mainWindow.add(transitionImage);
 	$.appWrap.left = Alloy.Globals.display.width;
 	exports.clearContent();
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
-	if (exports.nav) {
-		exports.nav.onTransition(options);
-	}
+	// if (exports.nav) {
+		// exports.nav.onTransition(options);
+	// }
 	if (exports.menu) {
 		exports.menu.onTransition(options);
 	}
@@ -547,7 +615,7 @@ $.transitions.slideInFromRight = function(view, options) {
 		left: -Alloy.Globals.display.width,
 		duration: options.duration,
 	}, function() {
-		exports.mainWindow.remove(transitionImage);
+		$.mainWindow.remove(transitionImage);
 		delete transitionImage;
 		exports.fireEvent("transitionend");
 	});
@@ -565,15 +633,15 @@ $.transitions.slideInFromLeft = function(view, options) {
 	});
 
 	// Set the view out of sight before switching it's contents
-	exports.mainWindow.add(transitionImage);
+	$.mainWindow.add(transitionImage);
 	$.appWrap.left = -Alloy.Globals.display.width;
 	exports.clearContent();
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
-	if (exports.nav) {
-		exports.nav.onTransition(options);
-	}
+	// if (exports.nav) {
+		// exports.nav.onTransition(options);
+	// }
 	if (exports.menu) {
 		exports.menu.onTransition(options);
 	}
@@ -584,7 +652,7 @@ $.transitions.slideInFromLeft = function(view, options) {
 		left: Alloy.Globals.display.width,
 		duration: options.duration,
 	}, function() {
-		exports.mainWindow.remove(transitionImage);
+		$.mainWindow.remove(transitionImage);
 		delete transitionImage;
 		exports.fireEvent("transitionend");
 	});
@@ -603,20 +671,20 @@ $.transitions.basic = function(view, options) {
 	});
 	
 	// Set the view out of sight before switching it's contents
-	//exports.mainWindow.add(transitionImage);
+	//$.mainWindow.add(transitionImage);
 	exports.clearContent();
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
-	if (exports.nav) {
-		exports.nav.onTransition(options);
-	}
+	// if (exports.nav) {
+		// exports.nav.onTransition(options);
+	// }
 	if (exports.menu) {
 		exports.menu.onTransition(options);
 	}
 	
 	// Show new view
-	exports.mainWindow.remove(transitionImage);
+	$.mainWindow.remove(transitionImage);
 	delete transitionImage;
 	exports.fireEvent("transitionend");
 };
@@ -627,9 +695,9 @@ $.transitions.none = function(view, options) {
 	$.content.add(view);
 	
 	// Adjust the navControls if a driver exists
-	if (exports.nav) {
-		exports.nav.onTransition(options);
-	}
+	// if (exports.nav) {
+		// exports.nav.onTransition(options);
+	// }
 	if (exports.menu) {
 		exports.menu.onTransition(options);
 	}
@@ -665,25 +733,25 @@ exports.hasHistory = function() {
 
 // Bind Android hardware menu button
 exports.bindMenu = function() {
-	exports.mainWindow.activity.onPrepareOptionsMenu = function(e) {
+	$.mainWindow.activity.onPrepareOptionsMenu = function(e) {
 		exports.menu.toggle();
 	};
 };
-exports.unBindMenu = function() {
-	exports.mainWindow.activity.onPrepareOptionsMenu = function(e) {};
+exports.releaseBindMenu = function() {
+	$.mainWindow.activity.onPrepareOptionsMenu = function(e) {};
 };
 
 // Bind Android hardware back button
 exports.bindBack = function() {
-	exports.mainWindow.addEventListener("androidback", exports.back);
+	$.mainWindow.addEventListener("androidback", exports.back);
 };
-exports.unBindBack = function() {
-	exports.mainWindow.removeEventListener("androidback", exports.back);
+exports.releaseBindBack = function() {
+	$.mainWindow.removeEventListener("androidback", exports.back);
 };
 
 // A convenience method for closing the application
 exports.exit = function() {
-	exports.mainWindow.close();
+	$.mainWindow.close();
 };
 
 // A convenience method for retrieving a pointer to the previous controller.

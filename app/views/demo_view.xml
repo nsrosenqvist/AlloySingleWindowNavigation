@@ -1,0 +1,17 @@
+<Alloy>
+	<View id="wrapper">
+		<View id="navBar">
+			<View id="buttonWrap">
+				<Button id="buttonMenu" title="Menu"></Button>
+				<View id="buttonBackWrap">
+					<Label id="buttonBack" text="<"></Label>
+					<View id="border"></View>
+				</View>
+			</View>
+			<Label id="title" text="Page"></Label>
+		</View>
+		<View id="main">
+
+		</View>
+	</View>
+</Alloy>

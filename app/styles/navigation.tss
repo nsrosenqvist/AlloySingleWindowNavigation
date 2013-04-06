@@ -6,7 +6,7 @@
 	height: "100%",
 },
 "#content": {
-	backgroundColor: "white",
+	//backgroundColor: "white",
 	zIndex: 0,
 	width: "100%",
 	height: "100%",
