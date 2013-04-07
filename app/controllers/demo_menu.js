@@ -4,10 +4,6 @@ var mainWindow = navigation.getMainWindow();
 $.menuOpen = false;
 
 exports.init = function() {
-	// Calculate menu width
-	var newMenuWidth = Alloy.Globals.display.width - 70;
-	$.menuWrap.width = (newMenuWidth > $.menu.width) ? $.menu.width : newMenuWidth;
-	
 	mainWindow.add($.menuWrap);
 };
 
@@ -28,9 +24,13 @@ exports.open = function() {
 		Ti.API.info("Opening menu");
 		$.menuOpen = true;
 		exports.fireEvent("openstart");
+		
+		// Set the width of the menu
+		var newMenuWidth = mainWindow.size.width - 70;
+		$.menu.width = (newMenuWidth > $.menu.width) ? $.menu.width : newMenuWidth;	
 
 		// Show menu
-		navigation.appWrap.animate({left: $.menuWrap.width, duration: 150, curve: Ti.UI.ANIMATION_CURVE_EASE_OUT}, function() {
+		navigation.appWrap.animate({left: $.menu.width, duration: 150, curve: Ti.UI.ANIMATION_CURVE_EASE_OUT}, function() {
 			exports.fireEvent("opencompleted");
 		});
 	}

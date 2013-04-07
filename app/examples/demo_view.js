@@ -61,7 +61,7 @@ exports.init = function(options) {
 	$.title.text = options.title;
 		
 	if (options.viewMode == 'nav') {
-		exports.show();
+		exports.showNavBar();
 
 		if ( ! options.topLevel && ! $.backButton) {
 			$.buttonMenu.visible = false;
@@ -81,7 +81,7 @@ exports.init = function(options) {
 		$.title.left = $.buttonWrap.width + 15;
 	}
 	else {
-		exports.hide();
+		exports.hideNavBar();
 	}
 
 	// navigation.addOrientationChangeAction(function() {
@@ -103,13 +103,13 @@ exports.getViewMode = function() {
 	return $.prop.viewMode;
 };
 
-exports.show = function() {
+exports.showNavBar = function() {
 	Ti.API.info("Showing the navigation controls");
 	$.navBar.visible = true;
 	$.navBar.height = 50;
 };
 
-exports.hide = function() {
+exports.hideNavBar = function() {
 	Ti.API.info("Hiding the navigation controls");
 	$.navBar.visible = false;
 	$.navBar.height = 0;

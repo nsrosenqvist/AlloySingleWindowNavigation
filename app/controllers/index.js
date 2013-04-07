@@ -7,12 +7,11 @@ var conf = {};
 conf = {
 	index: "demo_welcome",
 	defaultViewMode: 'nav',
-	defaultOpenTransition: {transition: 'none', duration: 150},
-	defaultBackTransition: {transition: 'none', duration: 150},
+	defaultOpenTransition: {transition: 'fade', duration: 150},
+	defaultBackTransition: {transition: 'fade', duration: 150},
 	indexOptions: {
 		topLevel: true,
 		viewMode: 'nav',
-		transition: 'none',
 		title: 'Welcome',
 		identifier: 'index',
 	},
