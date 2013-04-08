@@ -4,13 +4,13 @@ $.prop = {};
 $.prop.historyStack = new Array();
 $.prop.historyStackOptions = new Array();
 $.prop.historyLimit = 10;
-$.prop.clearHistoryOnTopLevel = false;
+//$.prop.clearHistoryOnTopLevel = false;
 $.prop.index = null;
 $.prop.indexOptions = null;
 $.prop.defaultOpenTransition = {transition: 'fade', transitionColor: "#fff", duration: 200};
 $.prop.defaultBackTransition = {transition: 'fade', transitionColor: "#000", duration: 200};
 //$.prop.defaultViewMode = 'fullscreen';
-$.prop.defaultViewDriver = '';
+//$.prop.defaultViewDriver = '';
 $.prop.confirmOnExit = true;
 $.prop.defaultCloseMenu = true;
 
@@ -18,27 +18,26 @@ $.prop.defaultCloseMenu = true;
 $.transitionImage = null;
 $.transitions = {};
 $.confirmedExit = false;
-$.onTransition = [];
+//$.onTransition = [];
 $.mainWindow = undefined;
-$.onOrientationChange = [];
+//$.destroyQueue = [];
+//$.onOrientationChange = [];
+$.previous = {
+	controller: undefined,
+	options: undefined,
+};
+$.current = {
+	controller: undefined,
+	options: undefined,
+};
 
 // Internal helper functions
-// $.pixelsToDPUnits = function(pixels) {
-	// if (OS_IOS) {
-		// return pixels;
-	// }
-	// else {
-		// return (pixels / (Ti.Platform.displayCaps.dpi / 160));
-	// }
-// }
-
 $.merge = function(mergeInto, mergeFrom) {
 	for (var prop in mergeFrom) {
 		mergeInto[prop] = mergeFrom[prop];
 	}
 	return mergeInto;
 };
-
 $.mergeMissing = function(mergeInto, mergeFrom) {
 	for (var prop in mergeFrom) {
 		if ( ! mergeInto.hasOwnProperty(prop)) {
@@ -151,7 +150,8 @@ exports.init = function(args) {
 	$.mainWindow.open();
 
 	// Open the index/default/welcome view
-	exports.open($.prop.index, $.prop.indexOptions);
+	var options = $.merge($.prop.indexOptions, {first: true});
+	exports.open($.prop.index, options);
 	Ti.API.info("Application initialization complete");
 };
 
@@ -285,19 +285,12 @@ exports.getMainWindow = function() {
 // };
 
 // Open a controller's view
-exports.open = function(controller, options /* Also toplevel (boolean) */) {
+exports.open = function(controller, options) {
+	exports.fireEvent("openstart");
+	
 	if ( ! controller) {
 		Ti.API.error("Open of view failed, no controller specified");
 		return false;
-	}
-	
-	// Create an image of the current view that can be used to animate transitions
-	exports.fireEvent("openstart");
-	
-	// Parse options
-	if (typeof options == "boolean") {
-		options = {};
-		options.topLevel = options;
 	}
 	if ( ! options) {
 		options = {};
@@ -305,15 +298,9 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	
 	// Merge transition defaults
 	options = $.mergeMissing(options, $.prop.defaultOpenTransition);
-	
+
 	if ( ! options.hasOwnProperty("identifier")) {
 		options.identifier = "";
-	}
-	if ( ! options.hasOwnProperty("topLevel")) {
-		options.topLevel = false;
-	}
-	if ( ! options.hasOwnProperty("affectHistory")) {
-		options.affectHistory = true;
 	}
 	if ( ! options.hasOwnProperty("closeMenu")) {
 		options.closeMenu = $.prop.defaultCloseMenu;
@@ -327,6 +314,36 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	else {
 		Ti.API.info("Opening unknown controller view. Options: " + JSON.stringify(options));
 	}
+
+	// Set pointers to the current and previous controller
+	$.current.controller = controller;
+	$.current.options = options;
+	
+	if ($.prop.historyStack.length > 0) {
+		var prevIndex = $.prop.historyStack.length - 1;
+		$.previous.controller = $.prop.historyStack[prevIndex];
+		$.previous.options = $.prop.historyStackOptions[prevIndex];	
+	}
+	else {
+		$.previous.controller = undefined;
+		$.previous.options = undefined;
+	}
+	
+	$.prop.historyStackOptions.push(options);
+	$.prop.historyStack.push(controller);
+
+	// Open the resulting controller
+	exports.go(null, function() {
+		// Purge history
+		if ($.prop.historyLimit > 0) {
+			exports.clearHistory($.prop.historyLimit);
+		}
+	});
+};
+
+exports.go = function(options, callback) {
+	var controller = $.current.controller;
+	options = (options) ? $.merge($.current.options, options) : $.current.options;
 
 	// If a view hasn't been provided we show the controllers associated view 
 	var view = null;
@@ -345,41 +362,22 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 		Ti.API.info("Navigating within the same controller");
 		view = options.view;
 	}
-
+	
 	// This variable will hold the function which will perform the transition
 	var action = null;
 	
 	// If the specified transition exists we use it, otherwise we use the defaultTransition
 	if (exports.hasTransition(options.transition)) {
 		action = function() {
-			$.transitions[options.transition](view, options);
+			$.transitions[options.transition](view, options, callback);
 			delete action;
 		};
 	}
 	else {
 		action = function() {
-			$.transitions[$.prop.defaultOpenTransition.transition](view, options);
+			$.transitions[$.prop.defaultOpenTransition.transition](view, options, callback);
 			delete action;
 		};
-	}
-	
-	// Is this opening of a controller's view supposed to affect the historyStack?
-	if (options.affectHistory) {
-		if ($.prop.clearHistoryOnTopLevel && options.topLevel) {
-			Ti.API.info("Top level view opened, clearing all controller history");
-			exports.clearHistory();
-		}
-		else {
-			if ($.prop.historyLimit !== null) {
-				exports.clearHistory($.prop.historyLimit);
-			}
-		}
-		
-		$.prop.historyStackOptions.push(options);
-		$.prop.historyStack.push(controller);
-	}
-	else {
-		Ti.API.info("Opening view without affecting history");
 	}
 	
 	// Wait for the menu to close (if it's open) before opening new view 
@@ -388,8 +386,7 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 		
 		// Create a callback for when the menu has closed and delete it within itself so that it doesn't repeat
 		var listener = function() {
-			action();
-			$.transitionImage = null;
+			action();		
 			exports.menu.removeEventListener("closecompleted", listener);
 			exports.fireEvent("opencomplete");
 			Ti.API.info("New view loaded");
@@ -400,20 +397,13 @@ exports.open = function(controller, options /* Also toplevel (boolean) */) {
 	}
 	else {
 		action();
-		$.transitionImage = null;
 		exports.fireEvent("opencomplete");
 		Ti.API.info("New view loaded");
 	}
-	
-	return true;
 };
 
-// Navigate back in history with functionality for specifying
-// the number of steps to go back in history
-exports.back = function(steps, newOptions) {
-	if (typeof steps != "number") {
-		steps = 1;
-	}
+// Navigate back in history
+exports.back = function(newOptions) {
 	if ( ! newOptions) {
 		newOptions = {};
 	}
@@ -422,11 +412,6 @@ exports.back = function(steps, newOptions) {
 	if (exports.menu && exports.menu.isOpen()) {
 		exports.menu.close();
 		return true;
-	}
-	
-	// Prevent trying to go further back in history than what's possible
-	if (steps > $.prop.historyStack.length -1) {
-		steps = $.prop.historyStack.length -1;
 	}
 	
 	// Close app if we've gone to the very end of history
@@ -454,37 +439,34 @@ exports.back = function(steps, newOptions) {
 			return true;
 		}
 	} 
-
-	exports.fireEvent("back");
-	Ti.API.info("Navigating back in history " + steps + " steps...");
+	else {
+		Ti.API.info("Going back in the history stack");
+		exports.fireEvent("back");
+	}
 
 	// Controller we will show
-	var controller = null;
-	var options = null;
+	$.previous.controller = $.prop.historyStack.pop();
+	$.previous.options = $.prop.historyStackOptions.pop();
 	
-	for (var i = 0; i < steps + 1; i++) {
-		options = $.prop.historyStackOptions.pop();
-		controller = $.prop.historyStack.pop();
+	var curIndex = $.prop.historyStack.length - 1;
+	$.current.controller = $.prop.historyStack[curIndex];
+	$.current.options = $.prop.historyStackOptions[curIndex];
+	
+	// If the current view has been opened in some special way
+	// and have a unique method for going back, it will be executed
+	// instead of the normal transition
+	if (newOptions.hasOwnProperty("customBack")) {
+		newOptions.customBack();
 	}
-
-	// Parse options
-	if ( ! options) {
-		options = {};	
+	else {
+		// Merge options
+		var options = $.merge($.prop.defaultBackTransition, newOptions);
+		exports.go(options, function() {
+			$.previous.controller.destroy();
+			$.previous.controller = undefined;
+			$.previous.options = undefined;
+		});
 	}
-	
-	// Merge default transition
-	options = $.merge(options, $.prop.defaultBackTransition);
-	
-	Ti.API.info("Transition: " + options.transition);
-	
-	// Set topLevel property
-	if ( ! options.hasOwnProperty("topLevel")) {
-		options.topLevel = ( ! exports.hasHistory()) ? true : false;
-	}
-	
-	// Open the resulting controller with the stored options merged with the new options
-	options = $.merge(options, newOptions);
-	exports.open(controller, options);
 };
 
 // Transition related methods and some transition presets
@@ -505,10 +487,10 @@ exports.hasTransition = function(name) {
 };
 
 // Transition presets
-$.transitions.crossFade = function(view, options) {
+$.transitions.crossFade = function(view, options, callback) {
 	exports.fireEvent("transitionstart");
 	
-	if (exports.hasHistory()) {
+	if ( ! firstView) {
 		var oldController = exports.getPreviousController();
 		var oldOptions = exports.getPreviousControllerOptions();
 		var oldView = (oldOptions.hasOwnProperty("view")) ? oldOptions.view : oldController.getView();
@@ -533,48 +515,60 @@ $.transitions.crossFade = function(view, options) {
 	}
 };
 
-$.transitions.fade = function(view, options) {
+$.transitions.fade = function(view, options, callback) {
 	exports.fireEvent("transitionstart");
 	
-	if (exports.hasHistory()) {
-		var transitionColor = (options.transitionColor) ? options.transitionColor : "#000";	
-		var oldController = exports.getPreviousController();
-		var oldOptions = exports.getPreviousControllerOptions();
-		var oldView = (oldOptions.hasOwnProperty("view")) ? oldOptions.view : oldController.getView();
+	if ($.previous.controller) {
+		Ti.API.info("AAAAAAAAAAA");
+		Ti.API.info("HISTORYSTACK: " + $.prop.historyStack.length);
+		var transitionColor = (options.transitionColor) ? options.transitionColor : "#000";
+		var newView = ($.current.options.hasOwnProperty("view")) ? $.current.options.view : $.current.controller.getView();
+		var oldView = ($.previous.options.hasOwnProperty("view")) ? $.previous.options.view : $.previous.controller.getView();
 		var oldZIndex = oldView.zIndex;
 		
 		oldView.zIndex = 9;
 	
-		var transitionView = Ti.UI.createView({
-			backgroundColor: transitionColor,
-			height: $.appWrap.height,
-			width: $.appWrap.width,
-			left: 0,
-			top: 0,
-			zIndex: 8,
-		});
+		// var transitionView = Ti.UI.createView({
+			// backgroundColor: transitionColor,
+			// height: $.appWrap.height,
+			// width: $.appWrap.width,
+			// left: 0,
+			// top: 0,
+			// zIndex: 8,
+		// });
 	
 		// Add new view
-		$.content.add(transitionView);
-		$.content.add(view);
+		//$.content.add(transitionView);
+		$.content.add(newView);
 		
 		// Fade to new view
-		oldView.animate({opacity: 0, duration: options.duration}, function() {
+		oldView.animate({top: 20, duration: options.duration}, function() {
 			$.content.remove(oldView);
-			oldView.zIndex = oldZIndex;
+			view.top = 100;
 			
-			transitionView.animate({opacity: 0, duration: options.duration}, function() {
-				$.content.remove(transitionView);
-				delete transitionView;
-				exports.fireEvent("transitionend");
-			});
+			if (callback) {
+				callback();
+			}
+			//oldView.zIndex = oldZIndex;
+			
+			// transitionView.animate({opacity: 0, duration: options.duration}, function() {
+				// $.content.remove(transitionView);
+				// delete transitionView;
+				// exports.fireEvent("transitionend");
+			// });
 		});
 	}
 	else {
+		Ti.API.info("BBBBBBBBBBBB");
+		Ti.API.info("HISTORYSTACK: " + $.prop.historyStack.length);
 		view.opacity = 0;
 		$.content.add(view);
 		view.animate({opacity: 1, duration: options.duration}, function() {
 			exports.fireEvent("transitionend");
+			
+			if (callback) {
+				callback();
+			}
 		});
 	}
 };
@@ -688,41 +682,40 @@ $.transitions.none = function(view, options) {
 	}
 };
 
-// Clear the current view's content
+// Clear the appWrap's content
 exports.clearContent = function() {
 	for (var child in $.content.children) {
 		$.content.remove($.content.children[child]);
 	}
 };
-exports.removePreviousView = function() {
-	var prevController = exports.getPreviousController();
-	var prevOptions = exports.getPreviousControllerOptions();
-	
-	if (prevOptions.hasOwnProperty("view")) {
-		$.mainWindow.content.remove(prevOptions.view);
-	}
-	else {
-		$.mainWindow.content.remove(prevController.getView());
-	}
-};
 
+// Returns true if the historyStack is longer than 1
+exports.hasHistory = function() {
+	return ($.prop.historyStack.length > 1) ? true : false;
+};
 // Clear the historyStack. HistoryLimit specifies how many
 // steps of the most recent history to keep
 exports.clearHistory = function(historyLimit) {
-	historyLimit = (historyLimit) ? historyLimit : 0;
+	if (historyLimit) {
+		historyLimit = (historyLimit < 1) ? 1 : historyLimit;
+	}
+	else {
+		historyLimit = 1;
+	}
 	
-	for (var i = ($.prop.historyStack.length); i > historyLimit; i--) {
-		var oldOptions = $.prop.historyStackOptions.pop();
-		var oldController = $.prop.historyStack.pop();
-		
-		// Do not destroy the old controller if there is a specific view specified
-		if ( ! oldOptions.view) {
-			oldController.destroy();
+	if ($.prop.historyStack.length > 1 && historyLimit < $.prop.historyStack.length) {
+		for (var i = ($.prop.historyStack.length); i > historyLimit; i--) {
+			var oldOptions = $.prop.historyStackOptions.splice((i - 1), 1)[0];
+			var oldController = $.prop.historyStack.splice((i - 1), 1)[0];
+
+			// Do not destroy the old controller if there is a specific view specified
+			if ( ! oldOptions.view) {
+				oldController.destroy();
+				delete oldOptions;
+				delete oldController;
+			} 
 		}
 	}
-};
-exports.hasHistory = function() {
-	return ($.prop.historyStack.length > 1) ? true : false;
 };
 
 // Bind Android hardware menu button
@@ -750,50 +743,29 @@ exports.exit = function() {
 
 // A convenience method for retrieving a pointer to the previous controller.
 // The whole history stack can be retrieved and manipulated through exports.get('historyStack')
-exports.getPreviousController = function() {
-	var length = $.prop.historyStack.length;
-	
-	if (length > 1) {
-		return $.prop.historyStack[length - 2];
-	}
-	else {
-		return undefined;
-	}
+exports.getPrevious = function() {
+	return $.previous;
 };
-exports.getPreviousControllerOptions = function() {
-	var length = $.prop.historyStackOptions.length;
-	
-	if (length > 1) {
-		return $.prop.historyStackOptions[length - 2];
-	}
-	else {
-		return undefined;
-	}
+exports.getPreviousController = function() {
+	return $.previous.controller;
+};
+exports.getPreviousOptions = function() {
+	return $.previous.options;
 };
 
 // A convenience method for retrieving a pointer to the current controller.
 // The whole history stack can be retrieved and manipulated through exports.get('historyStack')
-exports.getCurrentController = function() {
-	var length = $.prop.historyStack.length;
-	
-	if (length > 0) {
-		return $.prop.historyStack[length - 1];
-	}
-	else {
-		return undefined;
-	}
+exports.getCurrent = function() {
+	return $.current;
 };
-exports.getCurrentControllerOptions = function() {
-	var length = $.prop.historyStackOptions.length;
-	
-	if (length > 0) {
-		return $.prop.historyStackOptions[length - 1];
-	}
-	else {
-		return undefined;
-	}
+exports.getCurrentController = function() {
+	return $.current.controller;
+};
+exports.getCurrentOptions = function() {
+	return $.current.options;
 };
 
+// Proxy methods for adding event listeners to the navigation module
 exports.addEventListener = function(eventName, action) {
 	$.appWrap.addEventListener(eventName, action);
 };

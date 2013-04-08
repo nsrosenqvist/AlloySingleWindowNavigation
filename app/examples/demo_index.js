@@ -16,6 +16,7 @@ conf = {
 		identifier: 'index',
 	},
 	menuDriver: 'demo_menu',
+	historyLimit: 2, // 0 now equals infinite
 	//nav: 'demo_navControls',
 	//defaultViewDriver: 'demo_view',
 	bindMenu: true,

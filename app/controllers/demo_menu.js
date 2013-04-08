@@ -95,7 +95,7 @@ exports.addEventListener("closestart", function(){
 
 // Buttons
 $.buttonIndex.addEventListener("click", function(e) {
-	if (navigation.getCurrentControllerOptions().identifier != 'index') {
+	if (navigation.getCurrentOptions().identifier != 'index') {
 		navigation.open(navigation.get('index'), navigation.get('indexOptions'));
 	}
 	else {
@@ -103,7 +103,7 @@ $.buttonIndex.addEventListener("click", function(e) {
 	}
 });
 $.buttonTopLevel.addEventListener("click", function(e) {
-	if (navigation.getCurrentControllerOptions().identifier != 'topview') {
+	if (navigation.getCurrentOptions().identifier != 'topview') {
 		navigation.open("demo_topview", {title: 'Topview', topLevel: true, identifier: 'topview'});
 	}
 	else {
