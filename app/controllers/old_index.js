@@ -7,8 +7,8 @@ var conf = {};
 conf = {
 	index: "demo_welcome",
 	defaultViewMode: 'nav',
-	defaultOpenTransition: {transition: 'fade', duration: 150},
-	defaultBackTransition: {transition: 'fade', duration: 150},
+	defaultOpenTransition: {transition: 'none', duration: 150},
+	defaultBackTransition: {transition: 'none', duration: 150},
 	indexOptions: {
 		topLevel: true,
 		viewMode: 'nav',
@@ -16,7 +16,7 @@ conf = {
 		identifier: 'index',
 	},
 	menuDriver: 'demo_menu',
-	historyLimit: 1,
+	historyLimit: 10, // 0 now equals infinite
 	//nav: 'demo_navControls',
 	//defaultViewDriver: 'demo_view',
 	bindMenu: true,

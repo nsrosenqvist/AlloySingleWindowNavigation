@@ -6,6 +6,7 @@ var conf = {};
 
 conf = {
 	index: "welcome", // The first controller which will be opened when we run navigation.init();
+	// indexOptions holds the values which are set as option
 	indexOptions: {
 		topLevel: true, // Value specifying if this view is a top level view - matters mostly on your own navigation controls driver implementation
 		viewMode: 'nav', // Also a value which can be used within your navigation control driver
