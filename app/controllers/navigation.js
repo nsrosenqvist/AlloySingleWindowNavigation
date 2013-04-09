@@ -4,8 +4,8 @@ $.prop = {};
 $.prop.historyStack = new Array();
 $.prop.historyStackOptions = new Array();
 $.prop.historyLimit = 10;
-$.prop.index = null;
-$.prop.indexOptions = null;
+$.prop.index = undefined;
+$.prop.indexOptions = undefined;
 $.prop.defaultOpenTransition = {transition: 'none', transitionColor: "#fff", duration: 150};
 $.prop.defaultBackTransition = {transition: 'none', transitionColor: "#000", duration: 150};
 $.prop.confirmOnExit = true;
@@ -53,6 +53,10 @@ $.mergeMissing = function(mergeInto, mergeFrom) {
 // Init
 exports.init = function(args) {
 	Ti.API.info("Initializing application...");
+	
+	// Create new, empty arrays for the history stack
+	$.prop.historyStack = new Array();
+	$.prop.historyStackOptions = new Array();
 
 	// Set the mainWindow
 	if (args.hasOwnProperty("mainWindow")) {
@@ -113,7 +117,7 @@ var set = exports.set = function(property, value) {
 };
 
 // Place holder for the menu driver
-exports.menu = null;
+exports.menu = undefined;
 
 exports.setMenuDriver = function(controller) {
 	if (typeof controller == "string") {

@@ -1,16 +1,13 @@
 var navigation = Alloy.Globals.navigation;
 var mainWindow = navigation.getMainWindow();
-var navCtrl = null;
 
-// Init the controller here, also set the reference to the navigation controls
-// driver here since it doesn't exist until init is run
+// Init the controller here
 exports.init = function() {
-	navCtrl = navigation.getNavControlsDriver();
 
 };
 
 // Method for toggling the visibility of the menu
-// It should fire the event "toggle"
+// It should fire the event "toggle" and subsequently "open" or "close"
 exports.toggle = function() {
 	exports.fireEvent("toggle");
 
@@ -43,28 +40,14 @@ exports.isOpen = function() {
 
 };
 
-// This method is executed during the transition of on view to another.
-// Here you can alter the view's components before it's presented to the user
-exports.onTransition = function() {
-	
-};
-
-// This method is executed when an orientationchange is triggered.
-// This solution is more reliable on Android than just hooking up to Ti.Gesture->orientationchange
-exports.onOrientationChange = function() {
-	
-};
-
 // Proxy method for the main/wrapper element of this controller
 exports.addEventListener = function(eventName, action) {
 
 };
-
 // Proxy method for the main/wrapper element of this controller
 exports.removeEventListener = function(eventName, action) {
 
 };
-
 // Proxy method for the main/wrapper element of this controller
 exports.fireEvent = function(eventName) {
 

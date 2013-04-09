@@ -5,34 +5,49 @@ var conf = {};
 /* -- Bootstrap your application below this line -- */
 
 conf = {
-	index: "welcome", // The first controller which will be opened when we run navigation.init();
-	// indexOptions holds the values which are set as option
+	// The mainWindow is the window which the navigation controller will act upon. This means that you can
+	// utilize several instances of the navigation controller if you'd prefer though only one is standard.
+	// If the mainWindow isn't set a new one will be created which will be used.
+	mainWindow: undefined,
+	// The first controller which will be opened when we run navigation.init() and the one opened
+	// when calling navigation.home
+	index: "welcome", 
+	// indexOptions holds options which will be provided when opening the home/default/welcome/index view.
+	// It holds the options required for the navigation.open method, the transition which will be
+	// executed and all options you yourself want connected to the opened view. This means that
+	// you can set an unlimited number of custom properties which will be tied to this view in the
+	// history stack - as long as you don't overwrite properties which are required for the navigation module
 	indexOptions: {
-		topLevel: true, // Value specifying if this view is a top level view - matters mostly on your own navigation controls driver implementation
-		viewMode: 'nav', // Also a value which can be used within your navigation control driver
 		transition: 'none', // The transition used for opening the view
-		title: 'Welcome', // A page title which can be used within your navigation control driver
 		identifier: 'index', // An identifier which you can specify to keep track of your controllers - refer to demo_menu.js
-		affectHistory: true, // Boolean specifying if the this view/controller should be added to the history stack
-		closeMenu: true, // Whether the menu should be closed before this view/controller is opened
+		closeMenu: true, // A boolean deciding whether the menu should be closed before this view/controller is opened
 	},
-	historyLimit: 20, // How many steps of history to save. null = infinite
-	defaultViewMode: 'nav', // The default value which can be used within your navigation control driver when opening views
-	defaultOpenTransition: {transition: 'none', duration: 150, transitionColor: "#fff"}, // Default transition and related options for opening a view, transition and duration must be set but transitionColor is only used in the "fade"-transition
-	defaultBackTransition: {transition: 'none', duration: 150, transitionColor: "#000"}, // Default transition and related options for opening a view when navigating backwards in the history stack
-	menu: 'menu', // Controller name of the menu driver
-	nav: 'navControls', // Controller name of the navigation controls driver
-	bindMenu: true, // Boolean setting if the android hardware button should trigger menu.toggle();
-	confirmOnExit: true, // Whether the user should get a notification that warns the user when coming to the end of the history stack by the Android HW-button
-	defaultCloseMenu: true, // Refer to indexOptions.closeMenu
+	// How many steps of history to save, might be useful if the application is requiring a lot of memory.
+	// Another solution is to call navigation.clearHistory on demand. 0 equals that there is no limit and
+	// no history will be purged.
+	historyLimit: 20, 
+	// Default transitions and related options for opening and closing a view, transition and duration must be set
+	// but transitionColor is only used in the "fade"-transition.
+	defaultOpenTransition: {transition: 'none', duration: 150, transitionColor: "#fff"}, 
+	defaultBackTransition: {transition: 'none', duration: 150, transitionColor: "#000"},
+	// Controller name of the menu driver - can be null if the menu is handled differently, e.g. purely from
+	// the context menu on Android
+	menuDriver: 'menu', 
+	// The default value for the closeMenu option when opening a view
+	defaultCloseMenu: true, 
+	
+	// ANDROID SPECIFIC
+	// Boolean setting saying if the hardware menu button should trigger navigation.toggle
+	bindMenu: true,
+	// The following decides whether the user should get a warning notification saying that the user has
+	// reached the end of the history stack and that the next time the user presses back the app closes.
+	confirmOnExit: true, 
 };
 
-// Here you can also make platform specific settings
+// It's also appropriate to set platform specific settings here in the bootstrap file
 if (OS_IOS) {
-	// conf.value = "set"; //
-}
-else {
-	// conf.value = "set"; //
+	conf.defaultOpenTransition: {transition: 'slideInFromRight', duration: 150, transitionColor: "#fff"}, 
+	conf.defaultBackTransition: {transition: 'slideInFromLeft', duration: 150, transitionColor: "#000"},
 }
 
 /* -- Bootstrap your application above this line -- */

@@ -6,7 +6,6 @@ var conf = {};
 
 conf = {
 	index: "demo_welcome",
-	defaultViewMode: 'nav',
 	defaultOpenTransition: {transition: 'slideInFromRight', duration: 150},
 	defaultBackTransition: {transition: 'slideInFromLeft', duration: 150},
 	indexOptions: {
@@ -16,9 +15,7 @@ conf = {
 		identifier: 'index',
 	},
 	menuDriver: 'demo_menu',
-	historyLimit: 10, // 0 now equals infinite
-	//nav: 'demo_navControls',
-	//defaultViewDriver: 'demo_view',
+	historyLimit: 10,
 	bindMenu: true,
 	confirmOnExit: true,
 };

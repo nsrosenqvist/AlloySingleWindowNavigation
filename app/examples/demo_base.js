@@ -25,18 +25,26 @@ var set = exports.set = function(property, value) {
 
 // Internal helper functions
 $.merge = function(mergeInto, mergeFrom) {
-	for (var prop in mergeFrom) {
-		mergeInto[prop] = mergeFrom[prop];
+	var newObj = {};
+	for (var prop in mergeInto) {
+		newObj[prop] = mergeInto[prop];
 	}
-	return mergeInto;
+	for (var prop in mergeFrom) {
+		newObj[prop] = mergeFrom[prop];
+	}
+	return newObj;
 };
 $.mergeMissing = function(mergeInto, mergeFrom) {
+	var newObj = {};
+	for (var prop in mergeInto) {
+		newObj[prop] = mergeInto[prop];
+	}
 	for (var prop in mergeFrom) {
-		if ( ! mergeInto.hasOwnProperty(prop)) {
-			mergeInto[prop] = mergeFrom[prop];
+		if ( ! newObj.hasOwnProperty(prop)) {
+			newObj[prop] = mergeFrom[prop];
 		}
 	}
-	return mergeInto;
+	return newObj;
 }
 
 // Set properties

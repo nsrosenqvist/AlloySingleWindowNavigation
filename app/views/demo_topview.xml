@@ -1,5 +1,0 @@
-<Alloy>
-	<View id="content" class="container">
-		<Button id="button" title="Open Subview"></Button>
-	</View>
-</Alloy>

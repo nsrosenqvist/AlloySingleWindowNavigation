@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 demo_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 app_dir="$( cd "$demo_dir" && cd ../ && pwd )"
