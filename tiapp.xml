@@ -4,7 +4,7 @@
     <name>AlloyAppBoilerplate</name>
     <version>1.0</version>
     <publisher>not specified</publisher>
-    <url>not specified</url>
+    <url>http://www.nsrosenqvist.com</url>
     <description>not specified</description>
     <copyright>not specified</copyright>
     <icon>appicon.png</icon>
@@ -39,8 +39,8 @@
     </mobileweb>
     <modules/>
     <deployment-targets>
-        <target device="iphone">false</target>
-        <target device="ipad">false</target>
+        <target device="iphone">true</target>
+        <target device="ipad">true</target>
         <target device="blackberry">false</target>
         <target device="android">true</target>
         <target device="mobileweb">false</target>
