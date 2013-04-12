@@ -375,7 +375,8 @@ $.transitions.crossFade = function(newView, previousView, options, callback) {
 	exports.fireEvent("transitionstart");
 	
 	if (previousView) {
-		var oldZIndex = previousView.zIndex;
+		var oldOpacity = previousView.opacity || 1;
+		var oldZIndex = previousView.zIndex || 0;
 		
 		previousView.zIndex = 9;
 		$.content.add(newView);
@@ -383,7 +384,7 @@ $.transitions.crossFade = function(newView, previousView, options, callback) {
 		// Fade to new view
 		previousView.animate({opacity: 0, duration: options.duration}, function() {
 			$.content.remove(previousView);
-			previousView.opacity = 1;
+			previousView.opacity = oldOpacity;
 			previousView.zIndex = oldZIndex;
 			exports.fireEvent("transitionend");
 			
@@ -393,9 +394,12 @@ $.transitions.crossFade = function(newView, previousView, options, callback) {
 		});
 	}
 	else {
+		var opacity = newView.opacity || 1;
 		newView.opacity = 0;
 		$.content.add(newView);
+		
 		newView.animate({opacity: 1, duration: options.duration}, function() {
+			newView.opacity = opacity;
 			exports.fireEvent("transitionend");
 			
 			if (callback) {
@@ -405,13 +409,14 @@ $.transitions.crossFade = function(newView, previousView, options, callback) {
 	}
 };
 
-$.transitions.fade = function(currentView, previousView, options, callback) {
+$.transitions.fade = function(newView, previousView, options, callback) {
 	exports.fireEvent("transitionstart");
 	
 	if (previousView) {
 		var transitionColor = (options.transitionColor) ? options.transitionColor : "#000";
-		var oldZIndex = previousView.zIndex;
-		
+		var oldZIndex = previousView.zIndex || 0;
+		var oldOpacity = previousView.opacity || 1;
+
 		previousView.zIndex = 9;
 	
 		var transitionView = Ti.UI.createView({
@@ -421,16 +426,17 @@ $.transitions.fade = function(currentView, previousView, options, callback) {
 			left: 0,
 			top: 0,
 			zIndex: 8,
+			opacity: 1,
 		});
 	
 		// Add new view
 		$.content.add(transitionView);
-		$.content.add(currentView);
+		$.content.add(newView);
 		
 		// Fade to new view
 		previousView.animate({opacity: 0, duration: options.duration}, function() {
 			$.content.remove(previousView);
-			previousView.opacity = 1;
+			previousView.opacity = oldOpacity;
 			previousView.zIndex = oldZIndex;
 			
 			transitionView.animate({opacity: 0, duration: options.duration}, function() {
@@ -445,10 +451,12 @@ $.transitions.fade = function(currentView, previousView, options, callback) {
 		});
 	}
 	else {
-		currentView.opacity = 0;
-		$.content.add(currentView);
+		var opacity = newView.opacity || 1;
+		newView.opacity = 0;
+		$.content.add(newView);
 		
-		currentView.animate({opacity: 1, duration: options.duration}, function() {
+		newView.animate({opacity: opacity, duration: options.duration}, function() {
+			newView.opacity = opacity;
 			exports.fireEvent("transitionend");
 			
 			if (callback) {
@@ -463,17 +471,20 @@ $.transitions.slideInFromRight = function(newView, previousView, options, callba
 	
 	if (previousView) {	
 		// Set the view out of sight before switching it's contents
+		var newViewOldLeft = newView.left || 0;
+		var previousViewOldLeft = previousView.left || 0;
+				
 		newView.left = $.mainWindow.size.width;
 		$.content.add(newView);
 	
 		// Slide in view
 		newView.animate({left: 0, duration: options.duration}, function() {
-			newView.left = 0;
+			newView.left = newViewOldLeft;
 		});
 		
 		previousView.animate({left: -$.mainWindow.size.width, duration: options.duration}, function() {
 			$.content.remove(previousView);
-			previousView.left = 0;
+			previousView.left = previousViewOldLeft;
 			exports.fireEvent("transitionend");
 			
 			if (callback) {
@@ -482,11 +493,12 @@ $.transitions.slideInFromRight = function(newView, previousView, options, callba
 		});
 	}
 	else {
+		var newViewOldLeft = newView.left || 0;
 		newView.left = $.mainWindow.size.width;
 		$.content.add(newView);
 		
 		newView.animate({left: 0, duration: options.duration}, function() {
-			newView.left = 0;
+			newView.left = newViewOldLeft;
 			exports.fireEvent("transitionend");
 			
 			if (callback) {
@@ -501,17 +513,20 @@ $.transitions.slideInFromLeft = function(newView, previousView, options, callbac
 	
 	if (previousView) {
 		// Set the view out of sight before switching it's contents
+		var newViewOldLeft = newView.left || 0;
+		var previousViewOldLeft = previousView.left || 0;
+		
 		newView.left = -$.mainWindow.size.width;
 		$.content.add(newView);
 		
 		// Slide in view
 		newView.animate({left: 0, duration: options.duration}, function() {
-			newView.left = 0;
+			newView.left = newViewOldLeft;
 		});
 		
 		previousView.animate({left: $.mainWindow.size.width, duration: options.duration}, function() {
 			$.content.remove(previousView);
-			previousView.left = 0;
+			previousView.left = previousViewOldLeft;
 			exports.fireEvent("transitionend");
 			
 			if (callback) {
@@ -520,11 +535,12 @@ $.transitions.slideInFromLeft = function(newView, previousView, options, callbac
 		});
 	}
 	else {
+		var newViewOldLeft = newView.left || 0;
 		newView.left = -$.mainWindow.size.width;
 		$.content.add(newView);
 		
 		newView.animate({left: 0, duration: options.duration}, function() {
-			newView.left = 0;
+			newView.left = newViewOldLeft;
 			exports.fireEvent("transitionend");
 			
 			if (callback) {
@@ -541,10 +557,18 @@ $.transitions.none = function(newView, previousView, options, callback) {
 		$.content.add(newView);
 		$.content.remove(previousView);
 		exports.fireEvent("transitionend");
+		
+		if (callback) {
+			callback();
+		}
 	}
 	else {
 		$.content.add(newView);
 		exports.fireEvent("transitionend");
+		
+		if (callback) {
+			callback();
+		}
 	}
 };
 

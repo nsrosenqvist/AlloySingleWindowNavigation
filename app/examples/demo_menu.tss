@@ -27,6 +27,7 @@
 	right: 20,
 	width: Ti.UI.FILL,
 	height: 40,
+	backgroundImage: null,
 	backgroundColor: "#95a0a8",
 	color: "#fff",
 	font: {

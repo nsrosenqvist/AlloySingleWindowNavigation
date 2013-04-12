@@ -23,6 +23,7 @@
 	width: 60,
 	bottom: 5,
 	height: Ti.UI.FILL,
+	backgroundImage: null,
 	backgroundColor: "#a8bd44",
 	zIndex: 0,
 	color: "#fff",

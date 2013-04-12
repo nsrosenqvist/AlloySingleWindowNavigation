@@ -46,8 +46,8 @@ conf = {
 
 // It's also appropriate to set platform specific settings here in the bootstrap file
 if (OS_IOS) {
-	conf.defaultOpenTransition: {transition: 'slideInFromRight', duration: 150, transitionColor: "#fff"}, 
-	conf.defaultBackTransition: {transition: 'slideInFromLeft', duration: 150, transitionColor: "#000"},
+	conf.defaultOpenTransition = {transition: 'slideInFromRight', duration: 150, transitionColor: "#fff"};
+	conf.defaultBackTransition = {transition: 'slideInFromLeft', duration: 150, transitionColor: "#000"};
 }
 
 /* -- Bootstrap your application above this line -- */
