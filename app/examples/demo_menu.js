@@ -5,6 +5,10 @@ $.menuOpen = false;
 
 exports.init = function() {
 	mainWindow.add($.menuWrap);
+	
+	if (OS_IOS) {
+		$.menu.remove($.buttonExit);
+	}
 };
 
 exports.toggle = function() {
