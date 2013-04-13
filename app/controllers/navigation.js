@@ -58,7 +58,7 @@ exports.init = function(args) {
 	$.prop.historyStackOptions = new Array();
 
 	// Set the mainWindow
-	if (args.hasOwnProperty("mainWindow")) {
+	if (args.mainWindow) {
 		$.mainWindow = args.mainWindow;
 		delete args.mainWindow;
 	}
@@ -126,7 +126,10 @@ exports.open = function(controller, options, callback) {
 	if (typeof controller == "string") {
 		Ti.API.info("Opening controller: " + controller + ", Options: " + JSON.stringify(options));
 		controller = Alloy.createController(controller, options);
-		controller.init();
+		
+		if (controller.hasOwnProperty("init")) {
+			controller.init();
+		}
 	}
 	else {
 		Ti.API.info("Opening unknown controller view. Options: " + JSON.stringify(options));

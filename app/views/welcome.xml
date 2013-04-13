@@ -1,3 +1,5 @@
 <Alloy>
-
+	<View id="main">
+		<Label>Welcome</Label>
+	</View>
 </Alloy>
