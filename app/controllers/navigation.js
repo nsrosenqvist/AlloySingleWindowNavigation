@@ -9,7 +9,6 @@ $.prop.indexOptions = undefined;
 $.prop.defaultOpenTransition = {transition: 'none', transitionColor: "#fff", duration: 150};
 $.prop.defaultBackTransition = {transition: 'none', transitionColor: "#000", duration: 150};
 $.prop.confirmOnExit = true;
-$.prop.defaultCloseMenu = true;
 
 // Private properties
 $.transitions = {};
@@ -71,16 +70,6 @@ exports.init = function(args) {
 		});
 	}
 	
-	// Create the menuDriver if it's been set
-	if (args.hasOwnProperty("menuDriver")) {
-		if (exports.setMenuDriver(args.menuDriver)) {
-			if (exports.menu.hasOwnProperty("init")) {
-				exports.menu.init();
-			}
-		}
-		delete args.menuDriver;
-	}
-	
 	// Set general properties
 	for (var option in args) {
 		set(option, args[option]);
@@ -88,9 +77,6 @@ exports.init = function(args) {
 	
 	// Android specific
 	if (OS_ANDROID) {
-		if (args.bindMenu) {
-			exports.bindMenu();
-		}
 		exports.bindBack();
 	}
 	
@@ -116,38 +102,13 @@ var set = exports.set = function(property, value) {
 	$.prop[property] = value;
 };
 
-// Place holder for the menu driver
-exports.menu = undefined;
-
-exports.setMenuDriver = function(controller) {
-	if (typeof controller == "string") {
-		try {
-			exports.menu = Alloy.createController(controller);
-		}
-		catch (error) {
-			Ti.API.error("Error occurred when creating menu driver: " + error);
-			return false;
-		}
-	}
-	else {
-		if (controller) {
-			exports.menu = controller;
-		}
-	}
-	
-	return true;
-};
-exports.getMenuDriver = function() {
-	return exports.menu;
-};
-
 // Get a pointer to the mainWindow
 exports.getMainWindow = function() {
 	return $.mainWindow;
 };
 
 // Open a controller's view
-exports.open = function(controller, options) {
+exports.open = function(controller, options, callback) {
 	exports.fireEvent("openstart");
 	
 	if ( ! controller) {
@@ -160,13 +121,6 @@ exports.open = function(controller, options) {
 	
 	// Merge transition defaults
 	options = $.mergeMissing(options, $.prop.defaultOpenTransition);
-
-	if ( ! options.hasOwnProperty("identifier")) {
-		options.identifier = "";
-	}
-	if ( ! options.hasOwnProperty("closeMenu")) {
-		options.closeMenu = $.prop.defaultCloseMenu;
-	}
 	
 	// Create controller and the view we're going to show
 	if (typeof controller == "string") {
@@ -181,13 +135,13 @@ exports.open = function(controller, options) {
 	// Set pointers to the current and previous controller
 	$.current.controller = controller;
 	$.current.options = options;
-	$.current.view = (options.hasOwnProperty("view")) ? options.view : $.current.controller.getView();
+	$.current.view = $.current.controller.getView();
 	
 	if ($.prop.historyStack.length > 0) {
 		var prevIndex = $.prop.historyStack.length - 1;
 		$.previous.controller = $.prop.historyStack[prevIndex];
 		$.previous.options = $.prop.historyStackOptions[prevIndex];
-		$.previous.view = ($.previous.options.hasOwnProperty("view")) ? $.previous.options.view : $.previous.controller.getView();
+		$.previous.view = $.previous.controller.getView();
 	}
 	else {
 		$.previous.controller = undefined;
@@ -198,81 +152,33 @@ exports.open = function(controller, options) {
 	$.prop.historyStackOptions.push(options);
 	$.prop.historyStack.push(controller);
 	
-	// If a custom open function has been provided we use it instead
-	if (options.hasOwnProperty("customOpen")) {
-		options.customOpen(options, function() {
-			if ($.prop.historyLimit > 0) {
-				exports.clearHistory($.prop.historyLimit);
-			}
-		});
-	}
-	else {
-		// Open the resulting controller
-		exports.go($.current.view, options, function() {
-			if ($.prop.historyLimit > 0) {
-				exports.clearHistory($.prop.historyLimit);
-			}
-		});
-	}
-};
-
-// Method for executing a transition, the history changes should be done in the
-// code calling this method (like in exports.open and exports.back)
-exports.go = function(view, options, callback) {
-	// This variable will hold the function which will perform the transition
-	var action = null;
+	// Set transition
+	var transition = options.transition || undefined;
 	
-	if ( ! view) {
-		Ti.API.error("No view has been specified, nothing to transition to");
-		return false;
+	if ( ! exports.hasTransition(transition)) {
+		Ti.API.warn('The set transition "' + transition + '" doesn\'t exist, defaulting to "' + $.prop.defaultBackTransition.transition + '"');
+		transition = $.prop.defaultBackTransition.transition;
 	}
 	
-	// If the specified transition exists we use it, otherwise we use the defaultTransition
-	if (exports.hasTransition(options.transition)) {
-		action = function() {
-			$.transitions[options.transition](view, $.previous.view, options, callback);
-			delete action;
-		};
-	}
-	else {
-		action = function() {
-			$.transitions[$.prop.defaultOpenTransition.transition](view, $.previous.view, options, callback);
-			delete action;
-		};
-	}
-	
-	// Wait for the menu to close (if it's open) before opening new view 
-	if (options.closeMenu && exports.menu && exports.menu.isOpen()) {
-		Ti.API.info("Transitioning to the new view after the menu has closed...");
-		
-		// Create a callback for when the menu has closed and delete it within itself so that it doesn't repeat
-		var listener = function() {
-			action();		
-			exports.menu.removeEventListener("closecompleted", listener);
-			exports.fireEvent("opencomplete");
-			Ti.API.info("New view loaded");
-		};
-		
-		exports.menu.addEventListener("closecompleted", listener);
-		exports.menu.close();
-	}
-	else {
-		action();
+	// Execute the set transition
+	$.transitions[transition]($.current.view, $.previous.view, options, function() {
+		// Purge history
+		if ($.prop.historyLimit > 0) {
+			exports.clearHistory($.prop.historyLimit);
+		}
 		exports.fireEvent("opencomplete");
-		Ti.API.info("New view loaded");
-	}
+		
+		// Fire callback if one has been set
+		if (callback) {
+			callback();
+		}
+	});
 };
 
 // Navigate back in history
-exports.back = function(newOptions) {
+exports.back = function(newOptions, callback) {
 	if ( ! newOptions) {
 		newOptions = {};
-	}
-
-	// If the menu is open we close it instead of navigating back in history
-	if (exports.menu && exports.menu.isOpen()) {
-		exports.menu.close();
-		return true;
 	}
 	
 	// Close app if we've gone to the very end of history
@@ -302,7 +208,7 @@ exports.back = function(newOptions) {
 	} 
 	else {
 		Ti.API.info("Going back in the history stack");
-		exports.fireEvent("back");
+		exports.fireEvent("backstart");
 	}
 
 	// Controller we will transition from
@@ -319,30 +225,32 @@ exports.back = function(newOptions) {
 	// Merge options
 	var options = $.merge($.current.options, $.prop.defaultBackTransition);
 	options = $.merge(options, newOptions);
+
+	// Set transition
+	var transition = options.transition || undefined;
 	
-	// If the current view has been opened in some special way
-	// and have a unique method for going back, it will be executed
-	// instead of the normal transition
-	if (newOptions.hasOwnProperty("customBack")) {
-		newOptions.customBack(options, function() {
-			$.previous.controller.destroy();
-			$.previous.controller = undefined;
-			$.previous.options = undefined;
-			$.previous.view = undefined;
-		});
+	if ( ! exports.hasTransition(transition)) {
+		Ti.API.warn('The set transition "' + transition + '" doesn\'t exist, defaulting to "' + $.prop.defaultBackTransition.transition + '"');
+		transition = $.prop.defaultBackTransition.transition;
 	}
-	else {	
-		exports.go($.current.view, options, function() {
-			$.previous.controller.destroy();
-			$.previous.controller = undefined;
-			$.previous.options = undefined;
-			$.previous.view = undefined;
-		});
-	}
+	
+	// Execute the set transition
+	$.transitions[transition]($.current.view, $.previous.view, options, function() {
+		$.previous.controller.destroy();
+		$.previous.controller = undefined;
+		$.previous.options = undefined;
+		$.previous.view = undefined;
+		exports.fireEvent("backcomplete");
+			
+		// Fire callback if one is set
+		if (callback) {
+			callback();
+		}
+	});
 };
 
 // Convenience method for opening the index view
-exports.home = function(options) {
+exports.home = function(options, callback) {
 	if (options) {
 		options = $.merge($.prop.indexOptions, options);
 	}
@@ -350,7 +258,7 @@ exports.home = function(options) {
 		options = $.prop.indexOptions;
 	}
 	
-	exports.open($.prop.index, options);
+	exports.open($.prop.index, options, callback);
 };
 
 // Transition related methods and some transition presets
@@ -361,13 +269,9 @@ exports.hasTransition = function(name) {
 	if ( ! name) {
 		return false;
 	}
-	
-	for (var transition in $.transitions) {
-		if (transition.toLowerCase() == name.toLowerCase()) {
-			return true;
-		}
+	else {
+		return $.transitions.hasOwnProperty(name);
 	}
-	return false;
 };
 
 // Transition presets
@@ -597,33 +501,19 @@ exports.clearHistory = function(historyLimit) {
 		while ($.prop.historyStack.length > historyLimit) {
 			var oldController = $.prop.historyStack.shift();
 			var oldOptions = $.prop.historyStackOptions.shift();
-			
-			// Do not destroy the old controller if there is a specific view specified
-			if ( ! oldOptions.view) {
-				oldController.destroy();
-				delete oldController;
-			} 
-			
+				
+			oldController.destroy();
+			delete oldController;
 			delete oldOptions;
 		}
 	}
-};
-
-// Bind Android hardware menu button
-exports.bindMenu = function() {
-	$.mainWindow.activity.onPrepareOptionsMenu = function(e) {
-		exports.menu.toggle();
-	};
-};
-exports.releaseBindMenu = function() {
-	$.mainWindow.activity.onPrepareOptionsMenu = function(e) {};
 };
 
 // Bind Android hardware back button
 exports.bindBack = function() {
 	$.mainWindow.addEventListener("androidback", exports.back);
 };
-exports.releaseBindBack = function() {
+exports.releaseBack = function() {
 	$.mainWindow.removeEventListener("androidback", exports.back);
 };
 

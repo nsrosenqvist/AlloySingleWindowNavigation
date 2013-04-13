@@ -1,7 +1,7 @@
 // Dependencies
 var navigation = Alloy.Globals.navigation;
 var mainWindow = navigation.getMainWindow();
-var menu = navigation.getMenuDriver();
+var menu = Alloy.Globals.menu;
 
 // Properties
 $.prop = {};
@@ -92,14 +92,6 @@ exports.init = function(options) {
 		exports.hideNavBar();
 	}
 
-	// navigation.addOrientationChangeAction(function() {
-		// if ($.viewMode == 'nav') {
-			// exports.show();
-		// }
-		// else {
-			// exports.hide();
-		// }
-	// });
 	Ti.API.info("Controller initialized");
 };
 
@@ -126,11 +118,9 @@ exports.hideNavBar = function() {
 exports.addEventListener = function(eventName, action) {
 	$.navBar.addEventListener(eventName, action);
 };
-	
 exports.removeEventListener = function(eventName, action) {
 	$.navBar.removeEventListener(eventName, action);
 };
-	
 exports.fireEvent = function(eventName) {
 	$.navBar.fireEvent(eventName);
 };

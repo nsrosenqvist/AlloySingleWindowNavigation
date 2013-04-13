@@ -1,10 +1,9 @@
-var navigation = Alloy.createController("navigation");
-Alloy.Globals.navigation = navigation;
-var conf = {};
+var navigation = Alloy.Globals.navigation = Alloy.createController("navigation");
 
 /* -- Bootstrap your application below this line -- */
 
-conf = {
+// App configuration
+var conf = {
 	index: "demo_welcome",
 	defaultOpenTransition: {transition: 'slideInFromRight', duration: 150},
 	defaultBackTransition: {transition: 'slideInFromLeft', duration: 150},
@@ -14,12 +13,14 @@ conf = {
 		title: 'Welcome',
 		identifier: 'index',
 	},
-	menuDriver: 'demo_menu',
 	historyLimit: 10,
-	bindMenu: true,
 	confirmOnExit: true,
 };
+
+// Create menu controller
+var menu = Alloy.Globals.menu = Alloy.createController("demo_menu");
 
 /* -- Bootstrap your application above this line -- */
 
 navigation.init(conf);
+menu.init();
