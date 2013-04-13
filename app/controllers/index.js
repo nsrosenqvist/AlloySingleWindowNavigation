@@ -1,10 +1,8 @@
-var navigation = Alloy.createController("navigation");
-Alloy.Globals.navigation = navigation;
-var conf = {};
+var navigation = Alloy.Globals.navigation = Alloy.createController("navigation");
 
 /* -- Bootstrap your application below this line -- */
 
-conf = {
+var conf = {
 	// The mainWindow is the window which the navigation controller will act upon. This means that you can
 	// utilize several instances of the navigation controller if you'd prefer though only one is standard.
 	// If the mainWindow isn't set a new one will be created which will be used.
