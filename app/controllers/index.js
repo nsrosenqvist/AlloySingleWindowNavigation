@@ -17,8 +17,6 @@ var conf = {
 	// history stack - as long as you don't overwrite properties which are required for the navigation module
 	indexOptions: {
 		transition: 'none', // The transition used for opening the view
-		identifier: 'index', // An identifier which you can specify to keep track of your controllers - refer to demo_menu.js
-		closeMenu: true, // A boolean deciding whether the menu should be closed before this view/controller is opened
 	},
 	// How many steps of history to save, might be useful if the application is requiring a lot of memory.
 	// Another solution is to call navigation.clearHistory on demand. 0 equals that there is no limit and
@@ -28,15 +26,8 @@ var conf = {
 	// but transitionColor is only used in the "fade"-transition.
 	defaultOpenTransition: {transition: 'none', duration: 150, transitionColor: "#fff"}, 
 	defaultBackTransition: {transition: 'none', duration: 150, transitionColor: "#000"},
-	// Controller name of the menu driver - can be null if the menu is handled differently, e.g. purely from
-	// the context menu on Android
-	menuDriver: 'menu', 
-	// The default value for the closeMenu option when opening a view
-	defaultCloseMenu: true, 
 	
 	// ANDROID SPECIFIC
-	// Boolean setting saying if the hardware menu button should trigger navigation.toggle
-	bindMenu: true,
 	// The following decides whether the user should get a warning notification saying that the user has
 	// reached the end of the history stack and that the next time the user presses back the app closes.
 	confirmOnExit: true, 
