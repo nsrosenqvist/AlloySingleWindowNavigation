@@ -1,9 +1,9 @@
-#appname: AlloyAppBoilerplate
-#appid: com.nsrosenqvist.alloyappboilerplate
-#type: mobile
-#guid: 93437b07-4d27-4e9b-8391-8e30546aed49
-#version: 1.0
-#publisher: not specified
-#url: not specified
-#image: appicon.png
-#desc: not specified
+#appname:AlloyAppBoilerplate
+#appid:com.nsrosenqvist.alloysinglewindownavigation
+#type:mobile
+#guid:93437b07-4d27-4e9b-8391-8e30546aed49
+#version:1.0
+#publisher:not specified
+#url:http://www.nsrosenqvist.com
+#image:appicon.png
+#desc:undefined

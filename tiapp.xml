@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ti:app xmlns:ti="http://ti.appcelerator.org">
-    <id>com.nsrosenqvist.alloyappboilerplate</id>
-    <name>AlloyAppBoilerplate</name>
+    <id>com.nsrosenqvist.alloysinglewindownavigation</id>
+    <name>AlloySingleWindowNavigation</name>
     <version>1.0</version>
-    <publisher>not specified</publisher>
+    <publisher>Niklas Rosenqvist</publisher>
     <url>http://www.nsrosenqvist.com</url>
-    <description>not specified</description>
-    <copyright>not specified</copyright>
+    <description>A single window navigation controller for the Titanium framework.</description>
+    <copyright>Niklas Rosenqvist</copyright>
     <icon>appicon.png</icon>
     <persistent-wifi>false</persistent-wifi>
     <prerendered-icon>false</prerendered-icon>
