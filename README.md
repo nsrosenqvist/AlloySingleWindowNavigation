@@ -1,4 +1,4 @@
-#AlloyWindowNavigation
+#AlloySingleWindowNavigation
 *A single window navigation controller for Titanium.*
 
 ---
