@@ -6,7 +6,7 @@
 
 This is a single window navigation controller that handles views and implements slick transitions. The controller is pretty flexible and is easily extended. If you want you can use how many windows as you want in your application and only attach an instance of this controller to the windows you want it for.
 
-The benefit of using a controller for the navigation instead of purely relying on the platform's solution is that it can be used as an abstract layer between your app and the multiple platforms you might deploy to. That way you can use the same methods for navigation for all platforms and let the controller do the platform specific actions.
+The benefit of using a controller for the navigation instead of purely relying on the platform's solution is that it can be used as an abstraction layer between your app and the multiple platforms you might deploy to. That way you can use the same methods for navigation for all platforms and let the controller do the platform specific actions.
 
 If you are looking for a navigation controller for multiple windows, you can base it upon the one from the ["Forging-Titanium" tutorial series](https://github.com/appcelerator-developer-relations/Forging-Titanium/tree/master/ep-002).
 
@@ -30,40 +30,40 @@ Slides in the new view from the right side of the screen.
 * **slidesInFromLeft**  
 Slides in the new view from  the left side of the screen.
 
-* **none**
+* **none**  
 Simply switches the views with no animation.
 
 Here is a simple example of opening the *welcome* controller with the *fade* transition:
 
 ```
-navigation.open('welcome', {transition: 'fade', duration: '100', transitionColor: '#fff'});
+navigation.open('welcome', {transition: 'fade', duration: 100, transitionColor: '#fff'});
 ```
 
 A note about transitions. The transitions are a lot smoother on iOS due to Titanium's animation performance issues. Also do Titanium on Android have zIndex issues which causes flickering. Therefore the fade transition simply switches to black and then fades out to the new view, instead of fading into the color and then fade out to the new view.
 
 ##Demo
 
-A reference implementation has been provided with the source which can be installed by copying the files from `app/demo/` to the correct directories. In `app/demo/` there is a BASH-script called `install_demo.sh` that will automatically copy the files to the correct location when it's run.
+A reference implementation has been provided with the source which can be installed by copying the files from `app/demo/` to the correct directories. In `app/demo/` there is a BASH-script called `install_demo.sh` that will automatically copy the files to the correct location when it's run. `demo_index.js` needs to be renamed to `index.js`, which is done automatically with `install_demo.sh`.
 
 ---
 #Properties
 
-* **index (string/Alloy.Controller)**  
+* **index** (string/Alloy.Controller)  
 The controller which will be defined as that index-view, the first view which is shown after the controller is initalized.
 
-* **indexOptions (JSON-Object)**  
+* **indexOptions** (JSON-Object)  
 When you navigate to a controller you can provide options which will, but not only, control what transition to use when the view is opened.
 
-* **historyLimit (int)**  
+* **historyLimit** (int)  
 If you are experiencing performance issues when having too many controllers/views in memory you can set a limit of how many controllers to keep in the history stack before purging old controllers from the stack. 0 equals that no history is purged automatically.
 
-* **defaultOpenTransition (JSON-Object)**  
+* **defaultOpenTransition** (JSON-Object)  
 A JSON-object defining the default values for the transition when opening a new view.
 
-* **defaultBackTransition (JSON-Object)**  
+* **defaultBackTransition** (JSON-Object)  
 A JSON-object defining the default values for the transition when going back in the history stack.
 
-* **confirmOnExit (boolean)**  
+* **confirmOnExit** (boolean)  
 This is an Android specific setting which if set to true shows a toast notification when the user has come to the end of the history stack. The message shown is warning the user that the next time the user presses back the app will exit.
 
 #Methods
