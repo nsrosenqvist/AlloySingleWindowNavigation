@@ -10,6 +10,7 @@ The benefit of using a controller for the navigation instead of purely relying o
 
 If you are looking for a navigation controller for multiple windows, you can base it upon the one from the ["Forging-Titanium" tutorial series](https://github.com/appcelerator-developer-relations/Forging-Titanium/tree/master/ep-002).
 
+---
 #How do I use it?
 
 In the sample provided is the `index.js` file used as a bootstrap for the app, setting up all necessary settings and initializing the controller. The controller's public properties are the ones listed near the bottom of this page. The mainWindow option of the `init` method defines what windows the navigation controller should be added to. If no window is set a new one is created.
