@@ -39,7 +39,7 @@ Here is a simple example of opening the *welcome* controller with the *fade* tra
 navigation.open('welcome', {transition: 'fade', duration: 100, transitionColor: '#fff'});
 ```
 
-A note about transitions. The transitions are a lot smoother on iOS due to Titanium's animation performance issues. Also do Titanium on Android have zIndex issues which causes flickering. Therefore the fade transition simply switches to black and then fades out to the new view, instead of fading into the color and then fade out to the new view.
+A note on transitions: The transitions are a lot smoother on iOS due to Titanium's animation performance issues. Also do Titanium on Android have zIndex issues which causes flickering. Therefore the fade transition simply switches to black and then fades out to the new view, instead of fading into the color and then fade out to the new view.
 
 ##Demo
 
@@ -72,6 +72,12 @@ Initializes the controller
 
 * **getMainWindow**()  
 Returns the mainWindow - the window which the navigation controller is attached to.
+
+* **get**(`property`)  
+Return the specified property.
+
+* **set**(`property, value`)
+Sets the specified property to the specified value.
 
 * **open**(`controller, options, callback`)  
 Opens the specified controller. The controller can either be a string or an instance of Alloy.Controller. Options is a JSON-object specifying what transition to use and all other properties which you yourself will use in the controller you are opening since this object will be passed on.
