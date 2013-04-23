@@ -341,12 +341,12 @@ $.transitions.fade = function(newView, previousView, options, callback) {
 		$.content.add(newView);
 		
 		// Fade to new view
-		previousView.animate({opacity: 0, duration: options.duration}, function() {
+		previousView.animate({opacity: 0, duration: Math.floor(options.duration / 2)}, function() {
 			$.content.remove(previousView);
 			previousView.opacity = oldOpacity;
 			previousView.zIndex = oldZIndex;
 			
-			transitionView.animate({opacity: 0, duration: options.duration}, function() {
+			transitionView.animate({opacity: 0, duration: Math.floor(options.duration / 2)}, function() {
 				$.content.remove(transitionView);
 				delete transitionView;
 				exports.fireEvent("transitionend");
