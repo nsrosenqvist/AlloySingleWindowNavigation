@@ -8,7 +8,7 @@ This is a single window navigation controller that handles views and implements 
 
 The benefit of using a controller for the navigation instead of purely relying on the platform's solution is that it can be used as an abstraction layer between your app and the multiple platforms you might deploy to. That way you can use the same methods for navigation for all platforms and let the controller do the platform specific actions.
 
-Please note that my code within the app directory is what's licensed under MIT, the Titanium components (e.g. Alloy plugin) are licensed under their respective licenses.
+Please note that my code within the app directory is what's licensed under MIT, the Titanium components (e.g. Alloy plugin) are licensed under their respective licenses. If you find something to improve, please contribute the patches back so that others can benefit from them as well.
 
 If you are looking for a navigation controller for multiple windows, you can base it upon the one from the ["Forging-Titanium" tutorial series](https://github.com/appcelerator-developer-relations/Forging-Titanium/tree/master/ep-002).
 
