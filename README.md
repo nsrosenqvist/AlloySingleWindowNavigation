@@ -42,7 +42,7 @@ Here is a simple example of opening the *welcome* controller with the *fade* tra
 navigation.open('welcome', {transition: 'fade', duration: 100, transitionColor: '#fff'});
 ```
 
-A note on transitions: The transitions are a lot smoother on iOS due to Titanium's animation performance issues. Also do Titanium on Android have zIndex issues which causes flickering. Therefore the fade transition simply switches to black and then fades out to the new view, instead of fading into the color and then fade out to the new view.
+A note on transitions: The transitions are a lot smoother on iOS due to Titanium's animation performance issues on Android. Also do Titanium on Android have zIndex issues which causes flickering. Therefore the fade transition simply switches to black and then fades out to the new view, instead of fading into the color and then fade out to the new view.
 
 ##Demo
 
